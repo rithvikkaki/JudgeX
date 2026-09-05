@@ -258,8 +258,8 @@ To get container isolation you need a host where you control the Docker daemon â
 a VPS (Hetzner, DigitalOcean, Fly.io Machine), not a shared PaaS.
 
 ```bash
-git clone https://github.com/dhanoliya-ji/ONLINE-CODING-JUDGE.git
-cd ONLINE-CODING-JUDGE
+git clone https://github.com/rithvikkaki/JudgeX.git
+cd JudgeX
 
 export SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(64))")
 export ADMIN_EMAILS=you@example.com

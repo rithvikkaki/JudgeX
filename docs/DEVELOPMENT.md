@@ -33,8 +33,8 @@ Getting the project running locally, how it is laid out, and how to work on it.
 ### Mode A — SQLite, zero setup
 
 ```bash
-git clone https://github.com/dhanoliya-ji/ONLINE-CODING-JUDGE.git
-cd ONLINE-CODING-JUDGE
+git clone https://github.com/rithvikkaki/JudgeX.git
+cd JudgeX
 
 python -m venv venv
 venv\Scripts\activate            # Windows

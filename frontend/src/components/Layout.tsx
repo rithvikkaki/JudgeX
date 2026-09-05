@@ -150,17 +150,17 @@ export function Layout() {
           <p>
             JudgeX — sandboxed competitive-programming judge by{" "}
             <a
-              href="https://github.com/dhanoliya-ji"
+              href="https://github.com/rithvikkaki"
               target="_blank"
               rel="noreferrer"
               className="text-violet-300 hover:text-violet-200"
             >
-              Gajendra Dhanoliya
+              Rithvik Kaki
             </a>
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/dhanoliya-ji/ONLINE-CODING-JUDGE"
+              href="https://github.com/rithvikkaki/JudgeX"
               target="_blank"
               rel="noreferrer"
               className="hover:text-violet-200"

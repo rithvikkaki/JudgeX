@@ -263,5 +263,5 @@ If you take this beyond a demo:
 
 Please open a GitHub issue for anything non-sensitive. For a vulnerability that
 would affect a live deployment, contact
-[@dhanoliya-ji](https://github.com/dhanoliya-ji) directly rather than filing
+[@rithvikkaki](https://github.com/rithvikkaki) directly rather than filing
 publicly.

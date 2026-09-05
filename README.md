@@ -10,7 +10,7 @@ Submit in Python, C++ or Java and poll for an asynchronous verdict — graded
 against sample and hidden test suites inside an isolated sandbox with hard time,
 memory, CPU and process limits.
 
-[![CI](https://github.com/dhanoliya-ji/ONLINE-CODING-JUDGE/actions/workflows/ci.yml/badge.svg)](https://github.com/dhanoliya-ji/ONLINE-CODING-JUDGE/actions/workflows/ci.yml)
+[![CI](https://github.com/rithvikkaki/JudgeX/actions/workflows/ci.yml/badge.svg)](https://github.com/rithvikkaki/JudgeX/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -260,8 +260,8 @@ flowchart LR
 The fastest path — **SQLite, no database server, no Docker**:
 
 ```bash
-git clone https://github.com/dhanoliya-ji/ONLINE-CODING-JUDGE.git
-cd ONLINE-CODING-JUDGE
+git clone https://github.com/rithvikkaki/JudgeX.git
+cd JudgeX
 
 python -m venv venv
 venv\Scripts\activate            # Windows
@@ -396,10 +396,10 @@ that documents its edges.
 
 ## 👨‍💻 Author
 
-**Gajendra Dhanoliya**
+**Rithvik Kaki**
 
-- GitHub — [@dhanoliya-ji](https://github.com/dhanoliya-ji)
-- LinkedIn — [Gajendra Dhanoliya](https://www.linkedin.com/in/gajendradhanoliya-dhanoliya-813345359/)
+- GitHub — [@rithvikkaki](https://github.com/rithvikkaki)
+- LinkedIn — [Rithvik Kaki](https://www.linkedin.com/in/rithvikkaki)
 
 ## 📄 License
 

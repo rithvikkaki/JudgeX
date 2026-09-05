@@ -1,0 +1,55 @@
+# Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Secrets - never commit these
+.env
+.env.*
+!.env.example
+
+# ...but Vite's VITE_* variables are inlined into client-side JavaScript, so
+# they are public by definition and cannot hold a secret. The API base URL is
+# build-time configuration and must be committed, or a CI build has no value to
+# use and silently falls back to localhost.
+!frontend/.env.production
+!frontend/.env.development
+
+# Local databases
+*.db
+*.sqlite3
+
+# Test / tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Sandbox scratch space
+.judge-tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

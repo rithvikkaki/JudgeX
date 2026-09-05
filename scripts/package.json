@@ -1,0 +1,9 @@
+{
+  "name": "crucible-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Tooling that is not part of the deployed application.",
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

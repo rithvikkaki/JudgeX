@@ -1,0 +1,401 @@
+@import "tailwindcss";
+
+/* ======================================================================
+   Design tokens
+   ====================================================================== */
+@theme {
+  /* Canvas — deep indigo-black, not pure black, so the aurora has something
+     to bleed into and the glass has a colour to pick up. */
+  --color-canvas: #07060f;
+  --color-canvas-raised: #0d0b1a;
+
+  /* Aurora stops */
+  --color-aurora-violet: #7c3aed;
+  --color-aurora-fuchsia: #d946ef;
+  --color-aurora-cyan: #22d3ee;
+  --color-aurora-indigo: #4f46e5;
+
+  /* Accents */
+  --color-accent: #a78bfa;
+  --color-accent-bright: #c4b5fd;
+
+  /* Verdict semantics — hue carries meaning, never hue alone (an icon or
+     label always accompanies these). */
+  --color-verdict-pass: #34d399;
+  --color-verdict-fail: #fb7185;
+  --color-verdict-warn: #fbbf24;
+  --color-verdict-info: #38bdf8;
+
+  /* Type */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ======================================================================
+   Base
+   ====================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: rgb(237 233 254 / 0.92);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgb(167 139 250 / 0.35);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-bright);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Scrollbars, themed so they do not punch a bright hole in a dark UI. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(167 139 250 / 0.28) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(167 139 250 / 0.25);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgb(167 139 250 / 0.45);
+    background-clip: content-box;
+  }
+}
+
+/* ======================================================================
+   Aurora backdrop
+
+   Three slow-drifting radial blobs behind a grain layer. They live in a
+   fixed, non-interactive layer so no scroll or hover work is triggered.
+   ====================================================================== */
+.aurora-field {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgb(79 70 229 / 0.28), transparent 70%),
+    var(--color-canvas);
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 9999px;
+  /* A large blur is what turns hard circles into light. */
+  filter: blur(90px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.aurora-blob--one {
+  width: 46rem;
+  height: 46rem;
+  top: -14rem;
+  left: -10rem;
+  background: radial-gradient(circle, var(--color-aurora-violet), transparent 68%);
+  animation: drift-one 26s var(--ease-out-expo) infinite alternate;
+}
+
+.aurora-blob--two {
+  width: 40rem;
+  height: 40rem;
+  top: 12%;
+  right: -12rem;
+  background: radial-gradient(circle, var(--color-aurora-cyan), transparent 68%);
+  opacity: 0.34;
+  animation: drift-two 32s var(--ease-out-expo) infinite alternate;
+}
+
+.aurora-blob--three {
+  width: 38rem;
+  height: 38rem;
+  bottom: -14rem;
+  left: 28%;
+  background: radial-gradient(circle, var(--color-aurora-fuchsia), transparent 68%);
+  opacity: 0.3;
+  animation: drift-three 38s var(--ease-out-expo) infinite alternate;
+}
+
+/* Fine grain over the gradient. Without it, large flat gradients band
+   visibly on 8-bit displays. */
+.aurora-grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+}
+
+@keyframes drift-one {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(6rem, 4rem, 0) scale(1.12); }
+}
+@keyframes drift-two {
+  from { transform: translate3d(0, 0, 0) scale(1.08); }
+  to   { transform: translate3d(-7rem, 5rem, 0) scale(1); }
+}
+@keyframes drift-three {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(4rem, -5rem, 0) scale(1.15); }
+}
+
+/* ======================================================================
+   Glass primitives
+
+   The defining risk of glassmorphism is unreadable text. Every surface here
+   keeps a solid base tint under the blur so contrast never depends on
+   whatever happens to be behind it, and a top inset highlight gives the
+   edge-lit look real glass has.
+   ====================================================================== */
+.glass {
+  position: relative;
+  background: linear-gradient(
+    160deg,
+    rgb(255 255 255 / 0.09) 0%,
+    rgb(255 255 255 / 0.045) 45%,
+    rgb(255 255 255 / 0.025) 100%
+  );
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.14) inset,
+    0 -1px 0 0 rgb(0 0 0 / 0.18) inset,
+    0 18px 50px -18px rgb(0 0 0 / 0.65);
+}
+
+/* Denser variant for panels holding body copy or code, where legibility
+   outranks translucency. */
+.glass-solid {
+  background: linear-gradient(
+    160deg,
+    rgb(18 15 34 / 0.88) 0%,
+    rgb(12 10 26 / 0.92) 100%
+  );
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.1) inset,
+    0 18px 50px -18px rgb(0 0 0 / 0.7);
+}
+
+.glass-hover {
+  transition:
+    transform 0.35s var(--ease-out-expo),
+    border-color 0.35s var(--ease-out-expo),
+    box-shadow 0.35s var(--ease-out-expo);
+}
+.glass-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgb(196 181 253 / 0.34);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.18) inset,
+    0 26px 60px -20px rgb(0 0 0 / 0.75),
+    0 0 0 1px rgb(167 139 250 / 0.12),
+    0 0 40px -12px rgb(167 139 250 / 0.35);
+}
+
+/* A hairline gradient rule along the top edge — the small detail that reads
+   as "lit from above". */
+.glass-edge::before {
+  content: "";
+  position: absolute;
+  inset-inline: 12%;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(196 181 253 / 0.7),
+    transparent
+  );
+}
+
+/* ======================================================================
+   Components
+   ====================================================================== */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #d946ef 100%);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.28) inset,
+    0 10px 30px -10px rgb(168 85 247 / 0.75);
+  transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s var(--ease-out-expo);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.35) inset,
+    0 16px 40px -12px rgb(168 85 247 / 0.9);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.12);
+  border-color: rgb(255 255 255 / 0.2);
+}
+.btn-ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.field {
+  width: 100%;
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.95rem;
+  color: rgb(237 233 254 / 0.95);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.field::placeholder {
+  color: rgb(196 181 253 / 0.42);
+}
+.field:focus {
+  outline: none;
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(167 139 250 / 0.6);
+  box-shadow: 0 0 0 4px rgb(167 139 250 / 0.14);
+}
+
+/* Text on glass: a faint shadow keeps light type legible if a bright part of
+   the aurora drifts underneath. */
+.text-on-glass {
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+.gradient-text {
+  background: linear-gradient(120deg, #e9d5ff 0%, #c4b5fd 35%, #67e8f9 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* CodeMirror needs a transparent shell so the glass shows through. */
+.cm-editor {
+  background: transparent !important;
+  height: 100%;
+}
+.cm-editor .cm-scroller {
+  font-family: var(--font-mono) !important;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+.cm-editor .cm-gutters {
+  background: transparent !important;
+  border-right: 1px solid rgb(255 255 255 / 0.07) !important;
+  color: rgb(196 181 253 / 0.35) !important;
+}
+.cm-editor.cm-focused {
+  outline: none !important;
+}
+.cm-editor .cm-activeLine,
+.cm-editor .cm-activeLineGutter {
+  background: rgb(167 139 250 / 0.07) !important;
+}
+
+/* ======================================================================
+   Animation utilities
+   ====================================================================== */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-rise {
+  animation: rise 0.6s var(--ease-out-expo) both;
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgb(167 139 250 / 0.5); }
+  70%  { box-shadow: 0 0 0 12px rgb(167 139 250 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(167 139 250 / 0); }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.04) 25%,
+    rgb(255 255 255 / 0.1) 50%,
+    rgb(255 255 255 / 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 0.6rem;
+}
+
+/* Respect a user's reduced-motion preference: kill the drifting aurora and
+   all decorative animation, keep the interface fully usable. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .aurora-blob {
+    animation: none;
+  }
+}
+
+/* backdrop-filter is widely supported but not universal; without this the
+   cards would render as barely-visible washes on unsupported browsers. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-solid {
+    background: rgb(16 13 32 / 0.94);
+  }
+}

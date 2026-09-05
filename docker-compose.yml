@@ -1,0 +1,96 @@
+# =========================================================================
+#  Local development stack: Postgres + Redis + API + worker, with the real
+#  Docker sandbox.
+#
+#      docker compose up --build
+#      docker compose exec api python -m scripts.seed
+#
+#  Swagger UI: http://localhost:8000/docs
+# =========================================================================
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: online_judge_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: online_judge
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # The API waits for this rather than racing the database on boot.
+      test: ["CMD-SHELL", "pg_isready -U postgres -d online_judge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: online_judge_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: online_judge_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/online_judge
+      SECRET_KEY: ${SECRET_KEY:-local-development-secret-change-me}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-admin@example.com}
+      ENVIRONMENT: development
+      REDIS_URL: redis://redis:6379/0
+      EXECUTION_BACKEND: auto
+      # Must match the bind mount below on BOTH sides - see the comment there.
+      EXECUTION_WORKDIR: /tmp/judge
+    volumes:
+      # Staging directory for sandbox scratch space, mounted at the SAME
+      # absolute path inside the container as on the host. Bind mounts are
+      # resolved by the daemon on the host, so a path that exists only inside
+      # this container would mount as an empty directory.
+      - /tmp/judge:/tmp/judge
+
+  worker:
+    build: .
+    container_name: online_judge_worker
+    restart: unless-stopped
+    command: celery -A app.celery_app.celery_app worker --loglevel=info --concurrency=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/online_judge
+      SECRET_KEY: ${SECRET_KEY:-local-development-secret-change-me}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-admin@example.com}
+      ENVIRONMENT: development
+      REDIS_URL: redis://redis:6379/0
+      EXECUTION_BACKEND: auto
+      EXECUTION_WORKDIR: /tmp/judge
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/judge:/tmp/judge
+
+volumes:
+  postgres_data:
+  redis_data:

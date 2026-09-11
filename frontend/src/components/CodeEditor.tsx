@@ -3,7 +3,6 @@ import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
-import { oneDark } from "@codemirror/theme-one-dark";
 import type { LanguageId } from "../lib/types";
 
 /** Runnable skeletons so a new user is never staring at an empty buffer. */
@@ -57,25 +56,25 @@ export function CodeEditor({
   }, [language]);
 
   return (
-    <CodeMirror
-      value={value}
-      height={height}
-      theme={oneDark}
-      extensions={extensions}
-      onChange={onChange}
-      basicSetup={{
-        lineNumbers: true,
-        highlightActiveLine: true,
-        highlightActiveLineGutter: true,
-        bracketMatching: true,
-        closeBrackets: true,
-        autocompletion: true,
-        foldGutter: false,
-        // The browser's own search UI is more familiar than CodeMirror's,
-        // and the panel fights the glass styling.
-        searchKeymap: false,
-      }}
-      aria-label="Source code editor"
-    />
+    <div className="overflow-hidden rounded-md border border-graphite-border bg-graphite-code">
+      <CodeMirror
+        value={value}
+        height={height}
+        theme="dark"
+        extensions={extensions}
+        onChange={onChange}
+        basicSetup={{
+          lineNumbers: true,
+          highlightActiveLine: true,
+          highlightActiveLineGutter: true,
+          bracketMatching: true,
+          closeBrackets: true,
+          autocompletion: true,
+          foldGutter: false,
+          searchKeymap: false,
+        }}
+        aria-label="Source code editor"
+      />
+    </div>
   );
 }

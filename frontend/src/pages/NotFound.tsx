@@ -4,13 +4,15 @@ import { Button, Card, EmptyState, PageContainer } from "../components/ui";
 export function NotFound() {
   return (
     <PageContainer className="py-24">
-      <Card solid edge className="mx-auto max-w-md p-8 text-center">
+      <Card className="mx-auto max-w-md p-8 text-center bg-graphite-surface border border-graphite-border rounded-lg">
         <EmptyState
-          title="404 — Page Not Found"
-          description="The page or resource you requested could not be found."
+          title="404 — ROUTE NOT FOUND"
+          description="The requested URI resource does not map to any active JudgeX endpoint."
           action={
             <Link to="/problems" className="mt-4 inline-block">
-              <Button>← Return to problems</Button>
+              <Button className="btn-lime font-mono text-xs uppercase tracking-wider">
+                ← Return to Problems
+              </Button>
             </Link>
           }
         />

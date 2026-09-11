@@ -80,53 +80,53 @@ function ContestCard({ contest, index }: { contest: Contest; index: number }) {
   return (
     <Link
       to={`/contests/${contest.id}`}
-      className="block animate-rise"
-      style={{ animationDelay: `${index * 70}ms` }}
+      className="block animate-swiss-in"
+      style={{ animationDelay: `${index * 50}ms` }}
       key={tick}
     >
-      <Card hover edge className="p-6">
+      <Card className="p-6 bg-graphite-surface border border-graphite-border hover:border-graphite-border-hover transition-colors rounded-lg">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="mb-2 flex flex-wrap items-center gap-2.5">
+            <div className="mb-2.5 flex flex-wrap items-center gap-2.5">
               <Badge tone={STATE_TONE[contest.state]}>
                 {contest.state === "Running" && (
                   <span
-                    className="size-1.5 rounded-full bg-current animate-pulse-ring"
+                    className="size-1.5 rounded-full bg-graphite-lime animate-pulse"
                     aria-hidden="true"
                   />
                 )}
-                {contest.state}
+                {contest.state.toUpperCase()}
               </Badge>
-              {contest.is_registered && <Badge tone="info">Registered</Badge>}
+              {contest.is_registered && <Badge tone="info">REGISTERED</Badge>}
             </div>
 
-            <h2 className="text-xl font-bold tracking-tight text-violet-50">
+            <h2 className="text-lg font-bold font-mono tracking-tight text-graphite-text-primary group-hover:text-graphite-lime transition-colors">
               {contest.title}
             </h2>
-            <p className="mt-1.5 line-clamp-2 text-sm text-violet-200/60">
+            <p className="mt-1.5 line-clamp-2 text-xs text-graphite-text-secondary font-sans leading-relaxed">
               {contest.description}
             </p>
 
-            <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-violet-200/50">
+            <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-graphite-text-muted">
               <div className="flex gap-1.5">
-                <dt>Starts</dt>
-                <dd className="text-violet-100/80">
+                <dt className="text-graphite-text-muted">STARTS:</dt>
+                <dd className="font-semibold text-graphite-text-primary">
                   {formatDate(contest.start_time)}
                 </dd>
               </div>
               <div className="flex gap-1.5">
-                <dt>Duration</dt>
-                <dd className="text-violet-100/80">
+                <dt className="text-graphite-text-muted">DURATION:</dt>
+                <dd className="font-semibold text-graphite-text-primary">
                   {Math.round(contest.duration_minutes / 60)}h
                 </dd>
               </div>
               <div className="flex gap-1.5">
-                <dt>Problems</dt>
-                <dd className="text-violet-100/80">{contest.problem_count}</dd>
+                <dt className="text-graphite-text-muted">PROBLEMS:</dt>
+                <dd className="font-semibold text-graphite-text-primary">{contest.problem_count}</dd>
               </div>
               <div className="flex gap-1.5">
-                <dt>Participants</dt>
-                <dd className="text-violet-100/80">
+                <dt className="text-graphite-text-muted">PARTICIPANTS:</dt>
+                <dd className="font-semibold text-graphite-text-primary">
                   {contest.participant_count}
                 </dd>
               </div>
@@ -134,11 +134,11 @@ function ContestCard({ contest, index }: { contest: Contest; index: number }) {
           </div>
 
           {contest.state !== "Ended" && (
-            <div className="shrink-0 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-center">
-              <p className="text-[10px] font-semibold tracking-wider text-violet-300/60 uppercase">
-                {contest.state === "Upcoming" ? "Starts in" : "Ends in"}
+            <div className="shrink-0 border border-graphite-border bg-graphite-code px-5 py-3 text-center font-mono rounded-md">
+              <p className="text-[10px] font-bold tracking-wider text-graphite-text-muted uppercase">
+                {contest.state === "Upcoming" ? "Starts In" : "Ends In"}
               </p>
-              <p className="mt-1 font-mono text-lg font-bold tabular-nums text-violet-50">
+              <p className="mt-1 font-mono text-base font-bold tabular-nums text-graphite-lime">
                 {countdown(target)}
               </p>
             </div>

@@ -117,7 +117,10 @@ class DockerBackend(SandboxBackend):
         if staging:
             os.makedirs(staging, exist_ok=True)
 
-        with tempfile.TemporaryDirectory(prefix="judge-", dir=staging) as workdir:
+        import shutil
+
+        workdir = tempfile.mkdtemp(prefix="judge-", dir=staging)
+        try:
             try:
                 self._materialise(workdir, spec, request)
             except OSError as exc:
@@ -133,6 +136,8 @@ class DockerBackend(SandboxBackend):
                     return compile_result
 
             return self._execute(client, workdir, spec, request)
+        finally:
+            shutil.rmtree(workdir, ignore_errors=True)
 
     # ------------------------------------------------------------------ #
     # Stages
@@ -144,8 +149,11 @@ class DockerBackend(SandboxBackend):
         (base / spec.source_filename).write_text(request.source_code, encoding="utf-8")
         (base / "input.txt").write_text(request.stdin, encoding="utf-8")
 
-        # Prefer ownership transfer to container UID/GID (nobody: 65534:65534)
-        # with restrictive 0700 directory / 0600 file permissions.
+        # Set ownership and restrictive permissions for container user nobody (65534:65534).
+        # When running as root, full user chown (65534:65534) with 0700/0600 is applied.
+        # When running as non-root worker (UID 10001 with GID 65534), group chown (-1, 65534)
+        # with 0770/0660 is applied, restricting access strictly to worker UID 10001 and
+        # sandbox container GID 65534 without any world-writable (0777/0666) permissions.
         try:
             os.chown(base, 65534, 65534)
             for child in base.iterdir():
@@ -153,11 +161,16 @@ class DockerBackend(SandboxBackend):
                 os.chmod(child, 0o600)
             os.chmod(base, 0o700)
         except (AttributeError, OSError, PermissionError):
-            # Fallback for non-root host process or Windows host where chown is unavailable:
-            # Grant minimal read access for container user while avoiding world-writable 0777/0666.
-            os.chmod(base, 0o755)
-            for child in base.iterdir():
-                os.chmod(child, 0o644)
+            try:
+                os.chown(base, -1, 65534)
+                for child in base.iterdir():
+                    os.chown(child, -1, 65534)
+                    os.chmod(child, 0o660)
+                os.chmod(base, 0o770)
+            except (AttributeError, OSError, PermissionError):
+                os.chmod(base, 0o770)
+                for child in base.iterdir():
+                    os.chmod(child, 0o660)
 
     def _compile(
         self,

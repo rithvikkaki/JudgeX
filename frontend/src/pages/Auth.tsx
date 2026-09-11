@@ -54,25 +54,25 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-md items-center px-4 py-12 sm:px-6">
-      <Card solid edge className="animate-rise w-full p-8">
-        <div className="mb-7 text-center">
-          <span
-            className="mx-auto mb-4 grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 text-lg font-black text-white shadow-lg shadow-purple-500/30"
+      <Card className="animate-swiss-in w-full p-8 bg-[#141A18] border border-[#2A332F] shadow-2xl rounded-md">
+        <div className="mb-8 text-center">
+          <div
+            className="mx-auto mb-4 flex size-12 items-center justify-center bg-[#B7F34A] font-mono text-lg font-bold text-[#0D1110] tracking-widest border border-[#B7F34A] rounded-md"
             aria-hidden="true"
           >
             J
-          </span>
-          <h1 className="text-2xl font-bold tracking-tight text-violet-50">
-            {isRegister ? "Create your account" : "Welcome back"}
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-[#F1F5F2] uppercase font-mono">
+            {isRegister ? "Create Account" : "System Login"}
           </h1>
-          <p className="mt-1.5 text-sm text-violet-200/55">
+          <p className="mt-1.5 text-xs text-[#A7B2AC] font-sans">
             {isRegister
-              ? "Start solving problems in seconds."
-              : "Sign in to submit and track your progress."}
+              ? "Register credentials for JudgeX execution engine."
+              : "Authenticate to access workbench and submissions."}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           {error && <Alert tone="fail">{error}</Alert>}
 
           {isRegister && (
@@ -112,8 +112,8 @@ export function AuthPage({ mode }: { mode: Mode }) {
             }
           />
 
-          <Button type="submit" loading={busy} className="w-full">
-            {isRegister ? "Create account" : "Sign in"}
+          <Button type="submit" loading={busy} className="w-full btn-lime py-2.5 font-mono text-xs font-bold uppercase tracking-wider">
+            {isRegister ? "Register Account" : "Sign In"}
           </Button>
         </form>
 
@@ -121,19 +121,19 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <button
             onClick={fillDemo}
             type="button"
-            className="mt-3 w-full rounded-xl border border-dashed border-white/15 px-4 py-2.5 text-xs text-violet-200/60 transition-colors hover:border-violet-400/40 hover:text-violet-100"
+            className="mt-4 w-full border border-dashed border-[#2A332F] bg-[#1A211F] px-4 py-2 text-xs font-mono text-[#A7B2AC] transition-colors hover:border-[#39453F] hover:bg-[#202824] hover:text-[#F1F5F2] rounded-md"
           >
-            Use the demo account
+            Load Demo Credentials
           </button>
         )}
 
-        <p className="mt-6 text-center text-sm text-violet-200/55">
-          {isRegister ? "Already have an account?" : "No account yet?"}{" "}
+        <p className="mt-6 text-center text-xs text-[#A7B2AC] font-sans">
+          {isRegister ? "Already registered?" : "New user?"}{" "}
           <Link
             to={isRegister ? "/login" : "/register"}
-            className="font-semibold text-violet-300 hover:text-violet-200"
+            className="font-semibold text-[#B7F34A] hover:underline underline-offset-2 font-mono"
           >
-            {isRegister ? "Sign in" : "Create one"}
+            {isRegister ? "Sign in" : "Create an account"}
           </Link>
         </p>
       </Card>
@@ -165,7 +165,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="mb-1.5 block text-xs font-semibold tracking-wide text-violet-200/70 uppercase"
+        className="mb-1.5 block text-[11px] font-mono font-semibold tracking-wider text-[#A7B2AC] uppercase"
       >
         {label}
       </label>
@@ -179,14 +179,14 @@ function Field({
         required
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
-        style={error ? { borderColor: "rgb(251 113 133 / 0.6)" } : undefined}
+        className={error ? "border-[#FF6B6B] focus:border-[#FF6B6B]" : ""}
       />
       {error ? (
-        <p id={`${id}-error`} className="mt-1.5 text-xs text-rose-300">
+        <p id={`${id}-error`} className="mt-1 text-xs font-mono text-[#FF6B6B]">
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="mt-1.5 text-xs text-violet-200/40">
+        <p id={`${id}-hint`} className="mt-1 text-xs font-mono text-[#6F7B75]">
           {hint}
         </p>
       ) : null}

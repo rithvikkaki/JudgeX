@@ -1,30 +1,30 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { DIFFICULTY_CLASSES, TONE_CLASSES, verdictTone } from "../lib/format";
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TableHTMLAttributes,
+  TdHTMLAttributes,
+  TextareaHTMLAttributes,
+  ThHTMLAttributes,
+} from "react";
+import { TONE_CLASSES, verdictTone } from "../lib/format";
 import type { Difficulty } from "../lib/types";
 
-/* ---------------------------------------------------------------- Aurora */
+/* ---------------------------------------------------------------- Backdrop */
 
 export function AuroraBackdrop() {
-  return (
-    <>
-      <div className="aurora-field" aria-hidden="true">
-        <div className="aurora-blob aurora-blob--one" />
-        <div className="aurora-blob aurora-blob--two" />
-        <div className="aurora-blob aurora-blob--three" />
-      </div>
-      <div className="aurora-grain" aria-hidden="true" />
-    </>
-  );
+  return <div className="graphite-grid-bg" aria-hidden="true" />;
 }
 
-/* ----------------------------------------------------------------- Glass */
+/* ----------------------------------------------------------------- Card */
 
 export function Card({
   children,
   className = "",
   hover = false,
-  solid = false,
-  edge = false,
+  solid: _solid = false,
+  edge: _edge = false,
   style,
 }: {
   children: ReactNode;
@@ -38,9 +38,8 @@ export function Card({
     <div
       style={style}
       className={[
-        solid ? "glass-solid" : "glass",
-        hover ? "glass-hover" : "",
-        edge ? "glass-edge" : "",
+        "graphite-card",
+        hover ? "graphite-card-hover" : "",
         className,
       ]
         .filter(Boolean)
@@ -54,7 +53,7 @@ export function Card({
 /* --------------------------------------------------------------- Buttons */
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "ghost";
+  variant?: "primary" | "ghost" | "accent";
   loading?: boolean;
   children: ReactNode;
 };
@@ -67,14 +66,20 @@ export function Button({
   disabled,
   ...rest
 }: ButtonProps) {
+  const variantClass =
+    variant === "accent"
+      ? "btn-lime"
+      : variant === "primary"
+      ? "btn-secondary"
+      : "btn-ghost";
+
   return (
     <button
       {...rest}
       disabled={disabled || loading}
       className={[
-        variant === "primary" ? "btn-primary" : "btn-ghost",
-        "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5",
-        "text-sm font-semibold text-white",
+        variantClass,
+        "inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold transition-all rounded-md",
         className,
       ].join(" ")}
     >
@@ -100,7 +105,7 @@ export function Spinner({ size = 18 }: { size?: number }) {
         r="9"
         stroke="currentColor"
         strokeWidth="2.5"
-        opacity="0.22"
+        opacity="0.2"
       />
       <path
         d="M21 12a9 9 0 0 0-9-9"
@@ -114,6 +119,14 @@ export function Spinner({ size = 18 }: { size?: number }) {
 
 /* ---------------------------------------------------------------- Badges */
 
+const GRAPHITE_TONE_CLASSES: Record<string, string> = {
+  pass: "bg-[#1B2A12] text-[#B7F34A] border border-[#2A3A19]",
+  fail: "bg-[#351A1A] text-[#FF6B6B] border border-[#522323]",
+  warn: "bg-[#332B15] text-[#F5C451] border border-[#4F4220]",
+  info: "bg-[#172638] text-[#70B7FF] border border-[#243B54]",
+  muted: "bg-[#1A211F] text-[#A7B2AC] border border-[#2A332F]",
+};
+
 export function Badge({
   children,
   tone = "muted",
@@ -126,9 +139,9 @@ export function Badge({
   return (
     <span
       className={[
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
-        "text-[11px] font-semibold tracking-wide uppercase",
-        TONE_CLASSES[tone],
+        "inline-flex items-center gap-1.5 rounded border px-2 py-0.5",
+        "font-mono text-[11px] font-semibold tracking-wide uppercase",
+        GRAPHITE_TONE_CLASSES[tone] ?? GRAPHITE_TONE_CLASSES.muted,
         className,
       ].join(" ")}
     >
@@ -147,7 +160,6 @@ export function VerdictBadge({
   const { tone, icon } = verdictTone(verdict);
   return (
     <Badge tone={tone} className={className}>
-      {/* The glyph means colour is never the only signal. */}
       <span aria-hidden="true">{icon}</span>
       {verdict}
     </Badge>
@@ -155,12 +167,18 @@ export function VerdictBadge({
 }
 
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
+  const toneMap: Record<Difficulty, string> = {
+    Easy: "bg-[#1B2A12] text-[#B7F34A] border border-[#2A3A19]",
+    Medium: "bg-[#332B15] text-[#F5C451] border border-[#4F4220]",
+    Hard: "bg-[#351A1A] text-[#FF6B6B] border border-[#522323]",
+  };
+
   return (
     <span
       className={[
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
-        "text-[11px] font-semibold tracking-wide uppercase",
-        DIFFICULTY_CLASSES[difficulty] ?? DIFFICULTY_CLASSES.Easy,
+        "inline-flex items-center gap-1.5 rounded border px-2 py-0.5",
+        "font-mono text-[11px] font-semibold tracking-wide uppercase",
+        toneMap[difficulty] ?? toneMap.Easy,
       ].join(" ")}
     >
       <span
@@ -181,12 +199,21 @@ export function Alert({
   children: ReactNode;
   tone?: keyof typeof TONE_CLASSES;
 }) {
+  const toneClass =
+    tone === "pass"
+      ? "bg-[#1B2A12] border-[#2A3A19] text-[#B7F34A]"
+      : tone === "warn"
+      ? "bg-[#332B15] border-[#4F4220] text-[#F5C451]"
+      : tone === "info"
+      ? "bg-[#172638] border-[#243B54] text-[#70B7FF]"
+      : "bg-[#351A1A] border-[#522323] text-[#FF6B6B]";
+
   return (
     <div
       role="alert"
       className={[
-        "rounded-xl border px-4 py-3 text-sm",
-        TONE_CLASSES[tone],
+        "rounded-md border p-3.5 text-xs font-mono font-medium",
+        toneClass,
       ].join(" ")}
     >
       {children}
@@ -208,16 +235,16 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
       <div
-        className="grid size-14 place-items-center rounded-2xl border border-white/12 bg-white/5 text-2xl text-violet-200/70"
+        className="grid size-10 place-items-center rounded border border-[#2A332F] bg-[#1A211F] font-mono text-base text-[#A7B2AC]"
         aria-hidden="true"
       >
         {icon}
       </div>
-      <h3 className="text-lg font-semibold text-violet-50">{title}</h3>
+      <h3 className="text-sm font-bold font-mono text-[#F1F5F2] uppercase">{title}</h3>
       {description && (
-        <p className="max-w-sm text-sm text-violet-200/60">{description}</p>
+        <p className="max-w-sm text-xs font-sans text-[#A7B2AC]">{description}</p>
       )}
-      {action}
+      {action && <div className="mt-2">{action}</div>}
     </div>
   );
 }
@@ -238,18 +265,18 @@ export function PageHeading({
   actions?: ReactNode;
 }) {
   return (
-    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div className="animate-rise">
+    <header className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-[#2A332F] pb-5">
+      <div className="animate-swiss-in">
         {eyebrow && (
-          <p className="mb-2 text-xs font-semibold tracking-[0.2em] text-violet-300/70 uppercase">
+          <p className="mb-1 font-mono text-[11px] font-semibold tracking-wider text-[#B7F34A] uppercase">
             {eyebrow}
           </p>
         )}
-        <h1 className="text-3xl font-bold tracking-tight text-violet-50 sm:text-4xl">
+        <h1 className="text-2xl font-bold tracking-tight text-[#F1F5F2] font-mono sm:text-3xl">
           {title}
         </h1>
         {description && (
-          <p className="mt-2 max-w-2xl text-sm text-violet-200/60">{description}</p>
+          <p className="mt-1.5 max-w-2xl text-xs font-sans text-[#A7B2AC]">{description}</p>
         )}
       </div>
       {actions}
@@ -271,55 +298,72 @@ export function Stat({
 }) {
   const valueColour =
     tone === "pass"
-      ? "text-emerald-300"
+      ? "text-[#B7F34A]"
       : tone === "fail"
-        ? "text-rose-300"
-        : tone === "warn"
-          ? "text-amber-300"
-          : tone === "info"
-            ? "text-sky-300"
-            : "text-violet-50";
+      ? "text-[#FF6B6B]"
+      : tone === "warn"
+      ? "text-[#F5C451]"
+      : tone === "info"
+      ? "text-[#70B7FF]"
+      : "text-[#F1F5F2]";
 
   return (
-    <Card className="glass-edge p-5" hover>
-      <p className="text-[11px] font-semibold tracking-[0.14em] text-violet-300/60 uppercase">
+    <Card className="p-5" hover>
+      <p className="font-mono text-[11px] font-semibold tracking-wider text-[#A7B2AC] uppercase">
         {label}
       </p>
       <p
-        className={`mt-2 font-mono text-2xl font-bold tabular-nums ${valueColour}`}
+        className={`mt-1.5 font-mono text-2xl font-bold tabular-nums ${valueColour}`}
       >
         {value}
       </p>
-      {hint && <p className="mt-1 text-xs text-violet-200/45">{hint}</p>}
+      {hint && <p className="mt-1 text-xs font-mono text-[#6F7B75]">{hint}</p>}
     </Card>
   );
 }
 
 /* ----------------------------------------------------------------- Forms */
 
-import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, TableHTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from "react";
+export function Input({
+  className = "",
+  ...rest
+}: InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={["graphite-input", className].join(" ")} {...rest} />;
+}
 
-export function Input({ className = "", ...rest }: InputHTMLAttributes<HTMLInputElement>) {
+export function Textarea({
+  className = "",
+  ...rest
+}: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <input className={["field", className].join(" ")} {...rest} />
+    <textarea
+      className={["graphite-input min-h-[90px] resize-y", className].join(" ")}
+      {...rest}
+    />
   );
 }
 
-export function Textarea({ className = "", ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return (
-    <textarea className={["field min-h-[100px] resize-y", className].join(" ")} {...rest} />
-  );
-}
-
-export function Select({ className = "", children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({
+  className = "",
+  children,
+  ...rest
+}: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <div className="relative">
-      <select className={["field appearance-none pr-10", className].join(" ")} {...rest}>
+      <select
+        className={["graphite-input appearance-none pr-9 font-mono text-xs font-medium", className].join(" ")}
+        {...rest}
+      >
         {children}
       </select>
-      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-violet-300/60">
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#6F7B75]">
         <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </div>
     </div>
@@ -328,7 +372,13 @@ export function Select({ className = "", children, ...rest }: SelectHTMLAttribut
 
 /* ---------------------------------------------------------------- Layout */
 
-export function PageContainer({ className = "", children }: { className?: string; children: ReactNode }) {
+export function PageContainer({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
     <div className={["mx-auto max-w-7xl px-4 sm:px-6 w-full", className].join(" ")}>
       {children}
@@ -336,9 +386,15 @@ export function PageContainer({ className = "", children }: { className?: string
   );
 }
 
-export function Section({ className = "", children }: { className?: string; children: ReactNode }) {
+export function Section({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <section className={["py-8 sm:py-12", className].join(" ")}>
+    <section className={["py-6 sm:py-8", className].join(" ")}>
       {children}
     </section>
   );
@@ -346,51 +402,92 @@ export function Section({ className = "", children }: { className?: string; chil
 
 /* ---------------------------------------------------------------- Tables */
 
-export function Table({ className = "", children, ...rest }: TableHTMLAttributes<HTMLTableElement>) {
+export function Table({
+  className = "",
+  children,
+  ...rest
+}: TableHTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-white/10 bg-white/[0.02]">
-      <table className={["w-full text-left text-sm text-violet-100", className].join(" ")} {...rest}>
+    <div className="w-full overflow-x-auto rounded-md border border-[#2A332F] bg-[#141A18]">
+      <table
+        className={["w-full text-left text-xs font-mono text-[#F1F5F2]", className].join(" ")}
+        {...rest}
+      >
         {children}
       </table>
     </div>
   );
 }
 
-export function Thead({ className = "", children }: { className?: string; children: ReactNode }) {
+export function Thead({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <thead className={["border-b border-white/10 bg-white/5 text-xs font-semibold uppercase tracking-wider text-violet-300/80", className].join(" ")}>
+    <thead
+      className={[
+        "border-b border-[#2A332F] bg-[#1A211F] font-mono text-[11px] font-semibold uppercase tracking-wider text-[#A7B2AC]",
+        className,
+      ].join(" ")}
+    >
       {children}
     </thead>
   );
 }
 
-export function Tbody({ className = "", children }: { className?: string; children: ReactNode }) {
+export function Tbody({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <tbody className={["divide-y divide-white/5", className].join(" ")}>
+    <tbody className={["divide-y divide-[#2A332F]", className].join(" ")}>
       {children}
     </tbody>
   );
 }
 
-export function Tr({ className = "", children }: { className?: string; children: ReactNode }) {
+export function Tr({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <tr className={["transition-colors hover:bg-white/[0.04]", className].join(" ")}>
+    <tr className={["transition-colors hover:bg-[#1A211F]/80", className].join(" ")}>
       {children}
     </tr>
   );
 }
 
-export function Th({ className = "", children, ...rest }: ThHTMLAttributes<HTMLTableCellElement>) {
+export function Th({
+  className = "",
+  children,
+  ...rest
+}: ThHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <th className={["px-4 py-3 sm:px-6", className].join(" ")} {...rest}>
+    <th className={["px-4 py-3 sm:px-5", className].join(" ")} {...rest}>
       {children}
     </th>
   );
 }
 
-export function Td({ className = "", children, ...rest }: TdHTMLAttributes<HTMLTableCellElement>) {
+export function Td({
+  className = "",
+  children,
+  ...rest
+}: TdHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <td className={["whitespace-nowrap px-4 py-3 sm:px-6", className].join(" ")} {...rest}>
+    <td
+      className={["whitespace-nowrap px-4 py-3 sm:px-5", className].join(" ")}
+      {...rest}
+    >
       {children}
     </td>
   );
@@ -398,32 +495,61 @@ export function Td({ className = "", children, ...rest }: TdHTMLAttributes<HTMLT
 
 /* ------------------------------------------------------------- Overlays */
 
-export function Modal({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title: string; children: ReactNode }) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+}) {
   if (!isOpen) return null;
-  
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <Card className="relative w-full max-w-lg shadow-2xl animate-rise" solid>
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
-          <h2 className="text-lg font-semibold text-violet-50">{title}</h2>
-          <button onClick={onClose} className="text-violet-300/60 transition-colors hover:text-white" aria-label="Close">
-            <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-swiss-in">
+      <div
+        className="absolute inset-0 bg-[#0D1110]/80 backdrop-blur-[2px]"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="relative w-full max-w-lg rounded-lg border border-[#39453F] bg-[#141A18] p-6 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#2A332F] pb-3 mb-4">
+          <h2 className="text-sm font-bold font-mono text-[#F1F5F2] uppercase">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-[#6F7B75] hover:text-[#F1F5F2] transition-colors p-1"
+            aria-label="Close"
+          >
+            <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
-        <div className="p-6">
-          {children}
-        </div>
-      </Card>
+        <div>{children}</div>
+      </div>
     </div>
   );
 }
 
-export function Tabs({ tabs, activeId, onChange }: { tabs: { id: string; label: string }[]; activeId: string; onChange: (id: string) => void }) {
+export function Tabs({
+  tabs,
+  activeId,
+  onChange,
+}: {
+  tabs: { id: string; label: string }[];
+  activeId: string;
+  onChange: (id: string) => void;
+}) {
   return (
-    <div className="flex flex-wrap gap-2 border-b border-white/10 px-1">
+    <div className="flex flex-wrap gap-1 border-b border-[#2A332F] bg-[#1A211F] p-1 font-mono text-xs">
       {tabs.map((tab) => {
         const isActive = tab.id === activeId;
         return (
@@ -431,8 +557,10 @@ export function Tabs({ tabs, activeId, onChange }: { tabs: { id: string; label: 
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={[
-              "mb-[-1px] border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-              isActive ? "border-violet-400 text-violet-200" : "border-transparent text-violet-300/50 hover:border-white/20 hover:text-violet-200/80",
+              "rounded px-3.5 py-1.5 font-semibold transition-all uppercase",
+              isActive
+                ? "bg-[#141A18] text-[#B7F34A] border border-[#2A332F]"
+                : "text-[#A7B2AC] hover:text-[#F1F5F2] hover:bg-[#141A18]",
             ].join(" ")}
           >
             {tab.label}
@@ -442,3 +570,4 @@ export function Tabs({ tabs, activeId, onChange }: { tabs: { id: string; label: 
     </div>
   );
 }
+

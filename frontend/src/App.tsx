@@ -21,7 +21,7 @@ const Solve = lazy(() =>
 
 function RouteFallback() {
   return (
-    <div className="grid min-h-[60dvh] place-items-center text-violet-300">
+    <div className="grid min-h-[60dvh] place-items-center text-graphite-lime">
       <Spinner size={26} />
     </div>
   );
@@ -34,7 +34,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
   if (loading) {
     return (
-      <div className="grid min-h-[60dvh] place-items-center text-violet-300">
+      <div className="grid min-h-[60dvh] place-items-center text-graphite-lime">
         <Spinner size={26} />
       </div>
     );

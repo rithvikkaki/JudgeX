@@ -60,7 +60,7 @@ function Inline({ text }: { text: string }) {
       {parts.map((part, index): ReactNode => {
         if (part.startsWith("**") && part.endsWith("**")) {
           return (
-            <strong key={index} className="font-semibold text-violet-50">
+            <strong key={index} className="font-bold text-graphite-text-primary">
               {part.slice(2, -2)}
             </strong>
           );
@@ -69,7 +69,7 @@ function Inline({ text }: { text: string }) {
           return (
             <code
               key={index}
-              className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-[0.9em] text-violet-100"
+              className="rounded bg-graphite-code border border-graphite-border px-1.5 py-0.5 font-mono text-[0.9em] text-graphite-lime"
             >
               {part.slice(1, -1)}
             </code>

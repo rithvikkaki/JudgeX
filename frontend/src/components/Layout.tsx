@@ -22,22 +22,25 @@ export function Layout() {
   const links = NAV.filter((item) => !item.private || user);
 
   return (
-    <div className="relative flex min-h-dvh flex-col">
+    <div className="relative flex min-h-dvh flex-col bg-[#0D1110] text-[#F1F5F2]">
       <AuroraBackdrop />
       <ColdStartNotice />
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#07060f]/80 backdrop-blur-xl">
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2.5 shrink-0">
+      <header className="sticky top-0 z-40 border-b border-[#2A332F] bg-[#141A18]/95 backdrop-blur-md">
+        <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-4 sm:gap-8">
+            <Link to="/" className="flex items-center gap-2 shrink-0">
               <span
-                className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 text-sm font-black text-white shadow-lg shadow-purple-500/30"
+                className="grid size-7 place-items-center rounded-md bg-[#B7F34A] font-mono text-xs font-bold text-[#0D1110]"
                 aria-hidden="true"
               >
                 J
               </span>
-              <span className="text-[15px] font-bold tracking-tight text-violet-50">
+              <span className="text-base font-bold tracking-tight text-[#F1F5F2] font-mono">
                 JudgeX
+              </span>
+              <span className="hidden sm:inline-block rounded bg-[#1A211F] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#A7B2AC] border border-[#2A332F]">
+                ENGINE
               </span>
             </Link>
 
@@ -48,10 +51,10 @@ export function Layout() {
                   to={item.to}
                   className={({ isActive }) =>
                     [
-                      "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      "rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-all",
                       isActive
-                        ? "bg-white/10 text-violet-50"
-                        : "text-violet-200/60 hover:bg-white/5 hover:text-violet-100",
+                        ? "bg-[#1A211F] text-[#B7F34A] border border-[#2A332F]"
+                        : "text-[#A7B2AC] hover:bg-[#1A211F] hover:text-[#F1F5F2]",
                     ].join(" ")
                   }
                 >
@@ -61,21 +64,21 @@ export function Layout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
-              <div className="flex items-center gap-3">
-                <div className="hidden text-right sm:block">
-                  <p className="text-sm font-semibold text-violet-50">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="hidden sm:block text-right">
+                  <p className="text-xs font-mono font-semibold text-[#F1F5F2]">
                     {user.username}
                   </p>
                   {user.is_admin && (
-                    <p className="text-[10px] font-semibold tracking-wider text-fuchsia-300/80 uppercase">
+                    <p className="font-mono text-[9px] font-semibold tracking-wider text-[#B7F34A] uppercase">
                       Admin
                     </p>
                   )}
                 </div>
                 <span
-                  className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-violet-500/80 to-fuchsia-500/80 text-sm font-bold text-white shrink-0"
+                  className="hidden sm:grid size-8 place-items-center rounded-md bg-[#1A211F] border border-[#2A332F] font-mono text-xs font-bold text-[#B7F34A] shrink-0"
                   aria-hidden="true"
                 >
                   {user.username.slice(0, 1).toUpperCase()}
@@ -85,7 +88,7 @@ export function Layout() {
                     logout();
                     navigate("/");
                   }}
-                  className="btn-ghost rounded-lg px-3 py-2 text-sm font-medium text-violet-100"
+                  className="hidden sm:inline-block btn-ghost px-3 py-1.5 text-xs font-mono font-semibold"
                 >
                   Sign out
                 </button>
@@ -94,13 +97,13 @@ export function Layout() {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="btn-ghost rounded-lg px-3.5 py-2 text-sm font-medium text-violet-100"
+                  className="hidden sm:inline-block btn-ghost px-3.5 py-1.5 text-xs font-mono font-semibold"
                 >
                   Sign in
                 </Link>
                 <Link
                   to="/register"
-                  className="btn-primary rounded-lg px-3.5 py-2 text-sm font-semibold text-white"
+                  className="btn-lime px-3 py-1.5 text-xs font-mono font-semibold uppercase tracking-wider whitespace-nowrap"
                 >
                   Get started
                 </Link>
@@ -109,7 +112,7 @@ export function Layout() {
 
             <button
               onClick={() => setMenuOpen((open) => !open)}
-              className="btn-ghost grid size-9 place-items-center rounded-lg md:hidden"
+              className="btn-ghost grid size-8 place-items-center rounded-md md:hidden text-[#A7B2AC] shrink-0"
               aria-label="Toggle navigation"
               aria-expanded={menuOpen}
             >
@@ -119,7 +122,7 @@ export function Layout() {
         </nav>
 
         {menuOpen && (
-          <div className="border-t border-white/8 bg-[#07060f]/95 px-4 py-3 md:hidden">
+          <div className="border-t border-[#2A332F] bg-[#141A18] px-4 py-3 md:hidden animate-swiss-in">
             {links.map((item) => (
               <NavLink
                 key={item.to}
@@ -127,16 +130,41 @@ export function Layout() {
                 onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
                   [
-                    "block rounded-lg px-3 py-2.5 text-sm font-medium",
+                    "block rounded-md px-3 py-2 font-mono text-xs font-semibold mb-1",
                     isActive
-                      ? "bg-white/10 text-violet-50"
-                      : "text-violet-200/70 hover:bg-white/5",
+                      ? "bg-[#1A211F] text-[#B7F34A] border border-[#2A332F]"
+                      : "text-[#A7B2AC] hover:bg-[#1A211F]",
                   ].join(" ")
                 }
               >
                 {item.label}
               </NavLink>
             ))}
+            <div className="mt-2 border-t border-[#2A332F] pt-2">
+              {user ? (
+                <div className="flex items-center justify-between px-3 py-1">
+                  <span className="font-mono text-xs text-[#F1F5F2] font-semibold">{user.username}</span>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      logout();
+                      navigate("/");
+                    }}
+                    className="font-mono text-xs text-[#B7F34A] font-semibold hover:underline"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="block rounded-md px-3 py-2 font-mono text-xs font-semibold text-[#A7B2AC] hover:bg-[#1A211F]"
+                >
+                  Sign in
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </header>
@@ -145,15 +173,15 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-white/8 py-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-violet-200/45 sm:flex-row sm:px-6">
+      <footer className="border-t border-[#2A332F] bg-[#141A18] py-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-xs font-mono text-[#6F7B75] sm:flex-row sm:px-6">
           <p>
-            JudgeX — sandboxed competitive-programming judge by{" "}
+            JudgeX — Sandboxed Competitive Programming Engine by{" "}
             <a
               href="https://github.com/rithvikkaki"
               target="_blank"
               rel="noreferrer"
-              className="text-violet-300 hover:text-violet-200"
+              className="text-[#F1F5F2] font-semibold underline decoration-[#2A332F] hover:decoration-[#B7F34A]"
             >
               Rithvik Kaki
             </a>
@@ -163,17 +191,18 @@ export function Layout() {
               href="https://github.com/rithvikkaki/JudgeX"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-violet-200"
+              className="hover:text-[#F1F5F2] transition-colors"
             >
               Source
             </a>
+            <span className="text-[#2A332F]">•</span>
             <a
               href={`${import.meta.env.VITE_API_BASE_URL ?? ""}/docs`}
               target="_blank"
               rel="noreferrer"
-              className="hover:text-violet-200"
+              className="hover:text-[#F1F5F2] transition-colors"
             >
-              API docs
+              API Reference
             </a>
           </div>
         </div>
@@ -207,17 +236,17 @@ function ColdStartNotice() {
   if (state !== "cold") return null;
 
   return (
-    <div className="sticky top-0 z-50 border-b border-amber-400/25 bg-amber-500/12 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5 text-sm text-amber-100 sm:px-6">
-        <Spinner size={15} />
+    <div className="border-b border-[#4F4220] bg-[#332B15] py-2">
+      <div className="mx-auto flex max-w-7xl items-center gap-2.5 px-4 text-xs font-mono text-[#F5C451] sm:px-6">
+        <Spinner size={14} />
         <p>
-          <span className="font-semibold">Waking the judge…</span>{" "}
-          <span className="text-amber-100/75">
-            The API sleeps on free hosting and takes up to a minute to start.
-            This happens once.
+          <span className="font-bold">Waking judge instance...</span>{" "}
+          <span className="text-[#A7B2AC]">
+            Free environment sleeps when idle and requires ~30s to initialize.
           </span>
         </p>
       </div>
     </div>
   );
 }
+

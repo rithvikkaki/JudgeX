@@ -31,7 +31,7 @@ export const TONE_CLASSES: Record<string, string> = {
   fail: "text-rose-300 bg-rose-400/12 border-rose-400/30",
   warn: "text-amber-300 bg-amber-400/12 border-amber-400/30",
   info: "text-sky-300 bg-sky-400/12 border-sky-400/30",
-  muted: "text-violet-200/70 bg-white/6 border-white/12",
+  muted: "text-graphite-text-muted bg-graphite-subtle border-graphite-border",
 };
 
 export const DIFFICULTY_CLASSES: Record<Difficulty, string> = {

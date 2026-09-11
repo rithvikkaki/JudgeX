@@ -48,6 +48,7 @@ export function Solve() {
   const [busy, setBusy] = useState<"run" | "submit" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [tab, setTab] = useState<"verdict" | "input">("verdict");
+  const [mobilePane, setMobilePane] = useState<"problem" | "code" | "output">("code");
 
   useEffect(() => {
     setLoading(true);
@@ -85,7 +86,7 @@ export function Solve() {
     [slug, language],
   );
 
-  // Polling effect for async submissions (QUEUED / RUNNING -> COMPLETED / FAILED)
+  // Polling effect for async submissions
   useEffect(() => {
     if (!result) return;
     const status = result.status;
@@ -104,7 +105,7 @@ export function Solve() {
           }
         }
       } catch {
-        // Stop polling on error to prevent infinite loops
+        // Stop polling on error
       }
     };
 
@@ -131,8 +132,10 @@ export function Solve() {
         }),
       );
       setTab("verdict");
+      setMobilePane("output");
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Run failed");
+      setMobilePane("output");
     } finally {
       setBusy(null);
     }
@@ -151,8 +154,10 @@ export function Solve() {
       });
       setResult(sub);
       setTab("verdict");
+      setMobilePane("output");
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Submission failed");
+      setMobilePane("output");
     } finally {
       setBusy(null);
     }
@@ -161,10 +166,10 @@ export function Solve() {
   if (loading) {
     return (
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-10 sm:px-6">
-        <Skeleton className="h-10 w-80" />
+        <Skeleton className="h-10 w-80 rounded" />
         <div className="grid gap-5 lg:grid-cols-2">
-          <Skeleton className="h-[520px]" />
-          <Skeleton className="h-[520px]" />
+          <Skeleton className="h-[520px] rounded" />
+          <Skeleton className="h-[520px] rounded" />
         </div>
       </div>
     );
@@ -173,12 +178,12 @@ export function Solve() {
   if (loadError || !problem) {
     return (
       <div className="mx-auto max-w-lg px-4 py-24">
-        <Alert>{loadError ?? "Problem not found"}</Alert>
+        <Alert tone="fail">{loadError ?? "Problem not found"}</Alert>
         <Link
           to="/problems"
-          className="mt-4 inline-block text-sm text-violet-300 hover:text-violet-200"
+          className="mt-4 inline-block font-mono text-xs text-[#B7F34A] hover:underline"
         >
-          ← Back to problems
+          ← Back to problem archive
         </Link>
       </div>
     );
@@ -188,8 +193,8 @@ export function Solve() {
     result?.status === "QUEUED" || result?.status === "RUNNING";
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
-      {/* Screen reader live region for status transitions */}
+    <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
+      {/* Screen reader live region */}
       <div aria-live="polite" className="sr-only">
         {isPendingJudging
           ? `Submission status is ${result?.status}`
@@ -198,226 +203,265 @@ export function Solve() {
           : ""}
       </div>
 
-      {/* Header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      {/* Header Bar */}
+      <div className="mb-4 border border-[#2A332F] bg-[#141A18] p-4 rounded-md flex flex-wrap items-center justify-between gap-4">
         <div>
-          <Link
-            to="/problems"
-            className="mb-2 inline-block text-sm text-violet-300/70 hover:text-violet-200"
-          >
-            ← Problems
-          </Link>
+          <div className="flex items-center gap-2 font-mono text-xs text-[#A7B2AC] mb-1">
+            <Link
+              to="/problems"
+              className="hover:text-[#B7F34A] transition-colors uppercase tracking-wider"
+            >
+              ← PROBLEMS
+            </Link>
+            <span>/</span>
+            <span className="text-[#F1F5F2] font-semibold">{problem.slug}</span>
+          </div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-violet-50 sm:text-3xl">
+            <h1 className="text-xl font-bold tracking-tight text-[#F1F5F2] font-mono">
               {problem.title}
             </h1>
             <DifficultyBadge difficulty={problem.difficulty} />
-            {problem.solved_by_me && <Badge tone="pass">✓ Solved</Badge>}
+            {problem.solved_by_me && <Badge tone="pass">✓ SOLVED</Badge>}
           </div>
-          <p className="mt-2 font-mono text-xs text-violet-200/45">
-            {problem.time_limit_ms} ms · {problem.memory_limit_mb} MB ·{" "}
-            {problem.total_test_case_count} tests (
-            {problem.sample_test_case_count} shown)
-          </p>
+        </div>
+
+        <div className="flex items-center gap-4 font-mono text-xs text-[#A7B2AC] bg-[#1A211F] border border-[#2A332F] px-3 py-2 rounded">
+          <div><span className="text-[#6F7B75]">TIME LIMIT:</span> <strong className="text-[#F1F5F2]">{problem.time_limit_ms}ms</strong></div>
+          <div className="h-3 w-px bg-[#2A332F]" />
+          <div><span className="text-[#6F7B75]">MEMORY LIMIT:</span> <strong className="text-[#F1F5F2]">{problem.memory_limit_mb}MB</strong></div>
+          <div className="h-3 w-px bg-[#2A332F]" />
+          <div><span className="text-[#6F7B75]">TEST SUITE:</span> <strong className="text-[#F1F5F2]">{problem.total_test_case_count} cases</strong></div>
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-        {/* Statement */}
-        <Card solid className="overflow-hidden">
-          <div className="max-h-[calc(100dvh-14rem)] space-y-6 overflow-y-auto p-6 lg:sticky lg:top-20">
-            <Section title="Problem">
-              <Markdown text={problem.description} />
-            </Section>
-            <Section title="Input">
-              <Markdown text={problem.input_format} />
-            </Section>
-            <Section title="Output">
-              <Markdown text={problem.output_format} />
-            </Section>
-            <Section title="Constraints">
-              <p className="whitespace-pre-wrap font-mono text-[13px]">
-                {problem.constraints}
-              </p>
-            </Section>
+      {/* Mobile Workspace Switcher */}
+      <div className="lg:hidden flex border border-[#2A332F] bg-[#1A211F] p-1 font-mono text-xs rounded mb-3">
+        {(["problem", "code", "output"] as const).map((key) => (
+          <button
+            key={key}
+            onClick={() => setMobilePane(key)}
+            className={[
+              "flex-1 py-1.5 font-bold uppercase transition-colors rounded",
+              mobilePane === key
+                ? "bg-[#141A18] text-[#B7F34A] border border-[#2A332F]"
+                : "text-[#A7B2AC] hover:text-[#F1F5F2]",
+            ].join(" ")}
+          >
+            [ {key} ]
+          </button>
+        ))}
+      </div>
 
-            <div>
-              <h2 className="mb-3 text-xs font-semibold tracking-[0.16em] text-violet-300/70 uppercase">
-                Examples
-              </h2>
-              <div className="space-y-3">
-                {(samples.length > 0
-                  ? samples.map((s) => ({
-                      input: s.input_data ?? "",
-                      output: s.expected_output ?? "",
-                    }))
-                  : [
-                      {
-                        input: problem.sample_input,
-                        output: problem.sample_output,
-                      },
-                    ]
-                ).map((example, index) => (
-                  <div
-                    key={index}
-                    className="overflow-hidden rounded-xl border border-white/10 bg-black/25"
-                  >
-                    <div className="grid sm:grid-cols-2">
-                      <ExampleBlock label="Input" body={example.input} />
-                      <div className="border-t border-white/8 sm:border-t-0 sm:border-l">
-                        <ExampleBlock label="Output" body={example.output} />
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setStdin(example.input);
-                        setTab("input");
-                      }}
-                      className="w-full border-t border-white/8 py-2 text-xs text-violet-300/70 transition-colors hover:bg-white/5 hover:text-violet-200"
+      {/* Split Workbench Grid */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+        {/* Left Pane: Statement & Specs */}
+        <div className={mobilePane === "problem" ? "block" : "hidden lg:block"}>
+          <Card className="bg-[#141A18] border border-[#2A332F] rounded-md overflow-hidden">
+            <div className="max-h-[calc(100dvh-13rem)] space-y-6 overflow-y-auto p-6 lg:sticky lg:top-20">
+              <Section title="Problem Description">
+                <Markdown text={problem.description} />
+              </Section>
+              <Section title="Input Specification">
+                <Markdown text={problem.input_format} />
+              </Section>
+              <Section title="Output Specification">
+                <Markdown text={problem.output_format} />
+              </Section>
+              <Section title="Constraints">
+                <div className="bg-[#0A0F0E] border border-[#2A332F] p-3 font-mono text-xs text-[#F1F5F2] whitespace-pre-wrap rounded">
+                  {problem.constraints}
+                </div>
+              </Section>
+
+              <div>
+                <h2 className="mb-3 text-[11px] font-mono font-bold tracking-wider text-[#A7B2AC] uppercase">
+                  Sample Test Cases
+                </h2>
+                <div className="space-y-3">
+                  {(samples.length > 0
+                    ? samples.map((s) => ({
+                        input: s.input_data ?? "",
+                        output: s.expected_output ?? "",
+                      }))
+                    : [
+                        {
+                          input: problem.sample_input,
+                          output: problem.sample_output,
+                        },
+                      ]
+                  ).map((example, index) => (
+                    <div
+                      key={index}
+                      className="overflow-hidden border border-[#2A332F] bg-[#0A0F0E] rounded"
                     >
-                      Load into custom input ↓
-                    </button>
-                  </div>
-                ))}
+                      <div className="grid sm:grid-cols-2">
+                        <ExampleBlock label="Sample Input" body={example.input} />
+                        <div className="border-t border-[#2A332F] sm:border-t-0 sm:border-l">
+                          <ExampleBlock label="Sample Output" body={example.output} />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setStdin(example.input);
+                          setTab("input");
+                          setMobilePane("output");
+                        }}
+                        className="w-full border-t border-[#2A332F] bg-[#1A211F] py-1.5 font-mono text-xs font-semibold text-[#B7F34A] transition-colors hover:bg-[#202824]"
+                      >
+                        Load into custom input ↓
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Pane: Code Editor & Execution Console */}
+        <div className="space-y-4">
+          <div className={mobilePane === "code" || mobilePane === "output" ? "block" : "hidden lg:block"}>
+            <div className={mobilePane === "code" ? "block" : "hidden lg:block"}>
+              <Card className="bg-[#141A18] border border-[#2A332F] rounded-md overflow-hidden mb-4">
+                {/* Language Selection & Reset Toolbar */}
+                <div className="flex flex-wrap items-center justify-between border-b border-[#2A332F] bg-[#1A211F] px-4 py-2.5 font-mono text-xs">
+                  <div
+                    className="flex gap-1"
+                    role="group"
+                    aria-label="Language selection"
+                  >
+                    {LANGUAGES.map((id) => (
+                      <button
+                        key={id}
+                        onClick={() => setLanguage(id)}
+                        aria-pressed={language === id}
+                        className={[
+                          "px-3 py-1 font-mono text-xs font-semibold transition-colors uppercase border rounded",
+                          language === id
+                            ? "bg-[#B7F34A] text-[#0D1110] border-[#B7F34A] font-bold"
+                            : "bg-[#141A18] text-[#A7B2AC] border-[#2A332F] hover:bg-[#202824]",
+                        ].join(" ")}
+                      >
+                        {LANGUAGE_LABELS[id]}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => persistDraft(STARTERS[language])}
+                    className="text-xs font-mono text-[#6F7B75] transition-colors hover:text-[#F1F5F2] underline"
+                  >
+                    Reset Code
+                  </button>
+                </div>
+
+                <CodeEditor
+                  value={code}
+                  onChange={persistDraft}
+                  language={language}
+                  height="420px"
+                />
+
+                {/* Controls Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#2A332F] bg-[#1A211F] px-4 py-3">
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <Button
+                      variant="ghost"
+                      onClick={handleRun}
+                      loading={busy === "run"}
+                      disabled={busy !== null || isPendingJudging || !user}
+                      className="btn-secondary flex-1 sm:flex-initial px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider justify-center"
+                    >
+                      ▷ Run Custom
+                    </Button>
+                    <Button
+                      onClick={handleSubmit}
+                      loading={busy === "submit" || isPendingJudging}
+                      disabled={busy !== null || isPendingJudging || !user}
+                      className="btn-lime flex-1 sm:flex-initial px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider justify-center"
+                    >
+                      Submit Solution
+                    </Button>
+                  </div>
+
+                  {!user && (
+                    <p className="text-xs font-mono text-[#6F7B75]">
+                      <Link
+                        to="/login"
+                        state={{ from: `/problems/${slug}` }}
+                        className="font-semibold text-[#B7F34A] hover:underline"
+                      >
+                        Sign in
+                      </Link>{" "}
+                      required to judge.
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Console / Output Dock */}
+            <div className={mobilePane === "output" ? "block" : "hidden lg:block"}>
+              <Card className="bg-[#141A18] border border-[#2A332F] rounded-md overflow-hidden">
+                <div className="flex border-b border-[#2A332F] bg-[#1A211F] font-mono text-xs">
+                  {(["verdict", "input"] as const).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => setTab(key)}
+                      aria-pressed={tab === key}
+                      className={[
+                        "px-5 py-2.5 font-semibold transition-colors uppercase border-r border-[#2A332F]",
+                        tab === key
+                          ? "bg-[#141A18] border-t-2 border-t-[#B7F34A] text-[#B7F34A]"
+                          : "text-[#A7B2AC] hover:text-[#F1F5F2] hover:bg-[#141A18]",
+                      ].join(" ")}
+                    >
+                      {key === "verdict" ? "Execution Output" : "Custom Stdin"}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="p-5 font-sans">
+                  {tab === "input" ? (
+                    <div>
+                      <label
+                        htmlFor="stdin"
+                        className="mb-1.5 block text-[11px] font-mono font-semibold tracking-wider text-[#A7B2AC] uppercase"
+                      >
+                        Standard Input (stdin)
+                      </label>
+                      <textarea
+                        id="stdin"
+                        value={stdin}
+                        onChange={(event) => setStdin(event.target.value)}
+                        rows={5}
+                        spellCheck={false}
+                        className="graphite-input resize-y font-mono text-xs bg-[#0A0F0E] text-[#F1F5F2] border border-[#2A332F] focus:border-[#B7F34A]"
+                        placeholder="Input fed into your program on 'Run Custom'..."
+                      />
+                      <p className="mt-2 text-xs font-mono text-[#6F7B75]">
+                        Used only for custom test execution. <strong>Submit Solution</strong> runs against hidden judge test cases.
+                      </p>
+                    </div>
+                  ) : actionError ? (
+                    <Alert tone="fail">{actionError}</Alert>
+                  ) : busy === "run" ? (
+                    <JudgingState mode="run" />
+                  ) : isPendingJudging && result ? (
+                    <AsyncJudgingState status={result.status} />
+                  ) : result ? (
+                    <SubmissionResult submission={result} />
+                  ) : runResult ? (
+                    <RunOutput result={runResult} />
+                  ) : (
+                    <p className="py-8 text-center font-mono text-xs text-[#6F7B75]">
+                      Ready. Press <strong>Run Custom</strong> to test code, or <strong>Submit Solution</strong> to evaluate.
+                    </p>
+                  )}
+                </div>
+              </Card>
             </div>
           </div>
-        </Card>
-
-        {/* Workspace */}
-        <div className="space-y-4">
-          <Card solid className="overflow-hidden">
-            <div className="flex flex-wrap items-center gap-2 border-b border-white/8 px-4 py-3">
-              <div
-                className="flex gap-1 rounded-lg border border-white/10 bg-white/5 p-1"
-                role="group"
-                aria-label="Language"
-              >
-                {LANGUAGES.map((id) => (
-                  <button
-                    key={id}
-                    onClick={() => setLanguage(id)}
-                    aria-pressed={language === id}
-                    className={[
-                      "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
-                      language === id
-                        ? "bg-white/12 text-violet-50"
-                        : "text-violet-200/55 hover:text-violet-100",
-                    ].join(" ")}
-                  >
-                    {LANGUAGE_LABELS[id]}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={() => persistDraft(STARTERS[language])}
-                className="ml-auto text-xs text-violet-300/60 transition-colors hover:text-violet-200"
-              >
-                Reset code
-              </button>
-            </div>
-
-            <CodeEditor
-              value={code}
-              onChange={persistDraft}
-              language={language}
-              height="440px"
-            />
-
-            <div className="flex flex-wrap items-center gap-3 border-t border-white/8 px-4 py-3">
-              <Button
-                variant="ghost"
-                onClick={handleRun}
-                loading={busy === "run"}
-                disabled={busy !== null || isPendingJudging || !user}
-              >
-                ▷ Run
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                loading={busy === "submit" || isPendingJudging}
-                disabled={busy !== null || isPendingJudging || !user}
-              >
-                Submit solution
-              </Button>
-
-              {!user && (
-                <p className="text-sm text-violet-200/55">
-                  <Link
-                    to="/login"
-                    state={{ from: `/problems/${slug}` }}
-                    className="font-semibold text-violet-300 hover:text-violet-200"
-                  >
-                    Sign in
-                  </Link>{" "}
-                  to run or submit.
-                </p>
-              )}
-            </div>
-          </Card>
-
-          {/* Results */}
-          <Card solid className="overflow-hidden">
-            <div className="flex border-b border-white/8">
-              {(["verdict", "input"] as const).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setTab(key)}
-                  aria-pressed={tab === key}
-                  className={[
-                    "px-5 py-3 text-sm font-medium transition-colors",
-                    tab === key
-                      ? "border-b-2 border-violet-400 text-violet-50"
-                      : "text-violet-200/50 hover:text-violet-100",
-                  ].join(" ")}
-                >
-                  {key === "verdict" ? "Result" : "Custom input"}
-                </button>
-              ))}
-            </div>
-
-            <div className="p-5">
-              {tab === "input" ? (
-                <div>
-                  <label
-                    htmlFor="stdin"
-                    className="mb-2 block text-xs font-semibold tracking-wide text-violet-200/70 uppercase"
-                  >
-                    stdin
-                  </label>
-                  <textarea
-                    id="stdin"
-                    value={stdin}
-                    onChange={(event) => setStdin(event.target.value)}
-                    rows={6}
-                    spellCheck={false}
-                    className="field resize-y font-mono text-sm"
-                    placeholder="Input passed to your program when you press Run"
-                  />
-                  <p className="mt-2 text-xs text-violet-200/40">
-                    Used by <strong>Run</strong> only. <strong>Submit</strong>{" "}
-                    always uses the full hidden test suite.
-                  </p>
-                </div>
-              ) : actionError ? (
-                <Alert>{actionError}</Alert>
-              ) : busy === "run" ? (
-                <JudgingState mode="run" />
-              ) : isPendingJudging && result ? (
-                <AsyncJudgingState status={result.status} />
-              ) : result ? (
-                <SubmissionResult submission={result} />
-              ) : runResult ? (
-                <RunOutput result={runResult} />
-              ) : (
-                <p className="py-8 text-center text-sm text-violet-200/45">
-                  Run your code against custom input, or submit it to be judged
-                  against every test case.
-                </p>
-              )}
-            </div>
-          </Card>
         </div>
       </div>
     </div>
@@ -429,21 +473,21 @@ export function Solve() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="mb-2 text-xs font-semibold tracking-[0.16em] text-violet-300/70 uppercase">
+      <h2 className="mb-2 text-[11px] font-mono font-bold tracking-wider text-[#B7F34A] uppercase pb-1 border-b border-[#2A332F]">
         {title}
       </h2>
-      <div className="text-sm leading-relaxed text-violet-100/80">{children}</div>
+      <div className="text-xs leading-relaxed text-[#A7B2AC] font-sans">{children}</div>
     </div>
   );
 }
 
 function ExampleBlock({ label, body }: { label: string; body: string }) {
   return (
-    <div className="p-3.5">
-      <p className="mb-1.5 text-[10px] font-semibold tracking-wider text-violet-300/50 uppercase">
+    <div className="p-3">
+      <p className="mb-1 text-[10px] font-mono font-semibold tracking-wider text-[#6F7B75] uppercase">
         {label}
       </p>
-      <pre className="overflow-x-auto font-mono text-[13px] whitespace-pre-wrap text-violet-100/90">
+      <pre className="overflow-x-auto font-mono text-xs whitespace-pre-wrap text-[#F1F5F2]">
         {body}
       </pre>
     </div>
@@ -452,12 +496,12 @@ function ExampleBlock({ label, body }: { label: string; body: string }) {
 
 function JudgingState({ mode }: { mode: "run" | "submit" }) {
   return (
-    <div className="flex flex-col items-center gap-3 py-10">
+    <div className="flex flex-col items-center gap-3 py-8">
       <Spinner size={24} />
-      <p className="text-sm text-violet-200/70">
+      <p className="font-mono text-xs text-[#A7B2AC]">
         {mode === "submit"
-          ? "Preparing submission..."
-          : "Running your code..."}
+          ? "Transmitting payload to judge worker..."
+          : "Executing code in isolated container..."}
       </p>
     </div>
   );
@@ -467,16 +511,16 @@ function AsyncJudgingState({ status }: { status: string }) {
   const isQueued = status === "QUEUED";
 
   return (
-    <div className="flex flex-col items-center gap-3 py-10 text-center">
+    <div className="flex flex-col items-center gap-3 py-8 text-center font-mono">
       <Spinner size={28} />
       <div>
-        <h3 className="text-base font-semibold text-violet-50">
-          {isQueued ? "Queued" : "Running"}
+        <h3 className="text-sm font-bold text-[#F1F5F2] uppercase">
+          {isQueued ? "QUEUED IN WORKER POOL" : "EXECUTING TEST SUITE"}
         </h3>
-        <p className="mt-1 text-sm text-violet-200/70">
+        <p className="mt-1 text-xs text-[#A7B2AC]">
           {isQueued
-            ? "Waiting for a judge worker..."
-            : "Executing your submission..."}
+            ? "Waiting for available Docker sandbox runner..."
+            : "Running program against test cases..."}
         </p>
       </div>
       <Badge tone={isQueued ? "info" : "warn"} className="mt-1">
@@ -491,55 +535,53 @@ function SubmissionResult({ submission }: { submission: Submission }) {
 
   if (submission.status === "FAILED") {
     return (
-      <div className="space-y-4">
-        <Badge tone="fail">✕ FAILED</Badge>
+      <div className="space-y-4 font-mono text-xs">
+        <Badge tone="fail">✕ SYSTEM EXECUTION FAILED</Badge>
         <Alert tone="fail">
-          {submission.error_message || "Submission processing failed."}
+          {submission.error_message || "Submission processing encountered a system error."}
         </Alert>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 font-mono text-xs">
       <div className="flex flex-wrap items-center gap-3">
         <VerdictBadge verdict={submission.verdict} className="text-sm" />
         {submission.failed_test_index != null && (
-          <span className="font-mono text-xs text-violet-200/55">
-            failed at test #{submission.failed_test_index}
+          <span className="text-xs text-[#6F7B75]">
+            Failed on test #{submission.failed_test_index}
           </span>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Metric
-          label="Tests"
+          label="TEST SUITE"
           value={`${submission.passed_tests}/${submission.total_tests}`}
           tone={passed ? "pass" : "fail"}
         />
-        <Metric label="Score" value={String(submission.score)} />
-        <Metric label="Time" value={`${submission.execution_time_ms.toFixed(1)} ms`} />
-        <Metric label="Memory" value={formatMemory(submission.memory_kb)} />
+        <Metric label="SCORE" value={String(submission.score)} />
+        <Metric label="EXEC TIME" value={`${submission.execution_time_ms.toFixed(1)} ms`} />
+        <Metric label="MEMORY" value={formatMemory(submission.memory_kb)} />
       </div>
 
       {submission.total_tests > 0 && (
         <div>
-          <div className="mb-1.5 flex justify-between text-xs text-violet-200/50">
-            <span>Test suite</span>
-            <span className="font-mono">
+          <div className="mb-1 flex justify-between text-xs text-[#A7B2AC]">
+            <span>Pass Ratio</span>
+            <span>
               {Math.round(
                 (submission.passed_tests / submission.total_tests) * 100,
               )}
               %
             </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-white/8">
+          <div className="h-2 overflow-hidden bg-[#0A0F0E] border border-[#2A332F] rounded">
             <div
               className={[
-                "h-full rounded-full transition-[width] duration-700",
-                passed
-                  ? "bg-gradient-to-r from-emerald-400 to-teal-300"
-                  : "bg-gradient-to-r from-rose-400 to-orange-300",
+                "h-full transition-[width] duration-500",
+                passed ? "bg-[#B7F34A]" : "bg-[#FF6B6B]",
               ].join(" ")}
               style={{
                 width: `${(submission.passed_tests / submission.total_tests) * 100}%`,
@@ -551,10 +593,10 @@ function SubmissionResult({ submission }: { submission: Submission }) {
 
       {submission.error_message && (
         <div>
-          <p className="mb-2 text-xs font-semibold tracking-wide text-violet-200/60 uppercase">
-            Details
+          <p className="mb-1.5 text-[11px] font-bold text-[#FF6B6B] uppercase">
+            Compiler / Runtime Trace
           </p>
-          <pre className="max-h-52 overflow-auto rounded-xl border border-rose-400/20 bg-rose-950/25 p-3.5 font-mono text-xs whitespace-pre-wrap text-rose-200/90">
+          <pre className="max-h-52 overflow-auto border border-[#522323] bg-[#351A1A] p-3 font-mono text-xs whitespace-pre-wrap text-[#FF6B6B] rounded">
             {submission.error_message}
           </pre>
         </div>
@@ -562,43 +604,43 @@ function SubmissionResult({ submission }: { submission: Submission }) {
 
       {submission.test_results && submission.test_results.length > 0 && (
         <div>
-          <p className="mb-2 text-xs font-semibold tracking-wide text-violet-200/60 uppercase">
-            Per-test results
+          <p className="mb-2 text-[11px] font-bold text-[#A7B2AC] uppercase">
+            Test Case Telemetry
           </p>
           <div className="space-y-2">
             {submission.test_results.map((test) => (
               <div
                 key={test.index}
-                className="rounded-xl border border-white/10 bg-white/4 p-3"
+                className="border border-[#2A332F] bg-[#1A211F] p-3 rounded"
               >
                 <div className="flex items-center gap-2.5">
                   <span
                     className={[
-                      "grid size-6 place-items-center rounded-md text-xs font-bold",
+                      "flex size-5 items-center justify-center text-xs font-bold border rounded",
                       test.passed
-                        ? "bg-emerald-400/15 text-emerald-300"
-                        : "bg-rose-400/15 text-rose-300",
+                        ? "border-[#2A3A19] bg-[#1B2A12] text-[#B7F34A]"
+                        : "border-[#522323] bg-[#351A1A] text-[#FF6B6B]",
                     ].join(" ")}
                     aria-hidden="true"
                   >
                     {test.passed ? "✓" : "✕"}
                   </span>
-                  <span className="text-sm text-violet-100">
-                    Test {test.index}
+                  <span className="font-bold text-[#F1F5F2]">
+                    Test #{test.index}
                   </span>
                   <Badge tone={test.is_sample ? "info" : "muted"}>
                     {test.is_sample ? "sample" : "hidden"}
                   </Badge>
-                  <span className="ml-auto font-mono text-xs text-violet-200/45">
+                  <span className="ml-auto text-[#6F7B75]">
                     {test.execution_time_ms.toFixed(1)} ms
                   </span>
                 </div>
 
                 {test.is_sample && test.expected_output != null && (
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <Diff label="Expected" body={test.expected_output} ok />
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2 font-sans">
+                    <Diff label="Expected Output" body={test.expected_output} ok />
                     <Diff
-                      label="Your output"
+                      label="Actual Output"
                       body={test.actual_output ?? ""}
                       ok={test.passed}
                     />
@@ -607,9 +649,8 @@ function SubmissionResult({ submission }: { submission: Submission }) {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-violet-200/35">
-            Hidden test inputs and expected outputs are never sent to the
-            browser.
+          <p className="mt-2 text-[11px] text-[#6F7B75]">
+            * Hidden test inputs and expected outputs are concealed for evaluation integrity.
           </p>
         </div>
       )}
@@ -620,32 +661,31 @@ function SubmissionResult({ submission }: { submission: Submission }) {
 function RunOutput({ result }: { result: RunResult }) {
   const ok = result.outcome === "ok";
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-mono text-xs">
       <div className="flex flex-wrap items-center gap-3">
         <Badge tone={ok ? "pass" : "fail"}>
-          {ok ? "✓ Ran" : `✕ ${result.outcome.replace(/_/g, " ")}`}
+          {ok ? "✓ EXECUTED CLEANLY" : `✕ ${result.outcome.replace(/_/g, " ").toUpperCase()}`}
         </Badge>
-        <span className="font-mono text-xs text-violet-200/50">
-          {result.execution_time_ms.toFixed(1)} ms ·{" "}
-          {formatMemory(result.memory_kb)} · exit {result.exit_code}
+        <span className="text-[#A7B2AC]">
+          {result.execution_time_ms.toFixed(1)} ms · {formatMemory(result.memory_kb)} · exit code {result.exit_code}
         </span>
       </div>
 
       <div>
-        <p className="mb-1 text-xs font-semibold text-violet-300/60 uppercase">
-          stdout
+        <p className="mb-1 text-[11px] font-bold text-[#A7B2AC] uppercase">
+          Standard Output (stdout)
         </p>
-        <pre className="max-h-60 overflow-auto rounded-xl border border-white/10 bg-black/30 p-3 font-mono text-xs text-violet-100">
-          {result.stdout || <span className="italic opacity-50">(empty)</span>}
+        <pre className="max-h-60 overflow-auto border border-[#2A332F] bg-[#0A0F0E] p-3 font-mono text-xs text-[#F1F5F2] rounded">
+          {result.stdout || <span className="italic text-[#6F7B75]">(no output)</span>}
         </pre>
       </div>
 
       {result.stderr && (
         <div>
-          <p className="mb-1 text-xs font-semibold text-rose-300/80 uppercase">
-            stderr
+          <p className="mb-1 text-[11px] font-bold text-[#FF6B6B] uppercase">
+            Standard Error (stderr)
           </p>
-          <pre className="max-h-40 overflow-auto rounded-xl border border-rose-400/20 bg-rose-950/30 p-3 font-mono text-xs text-rose-200">
+          <pre className="max-h-40 overflow-auto border border-[#522323] bg-[#351A1A] p-3 font-mono text-xs text-[#FF6B6B] rounded">
             {result.stderr}
           </pre>
         </div>
@@ -664,18 +704,18 @@ function Metric({
   tone?: "pass" | "fail";
 }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-white/4 p-3 text-center">
-      <p className="text-[10px] font-semibold tracking-wider text-violet-300/50 uppercase">
+    <div className="border border-[#2A332F] bg-[#1A211F] p-3 text-center rounded">
+      <p className="text-[10px] font-mono font-bold tracking-wider text-[#6F7B75] uppercase">
         {label}
       </p>
       <p
         className={[
-          "mt-1 font-mono text-base font-bold",
+          "mt-1 font-mono text-sm font-bold",
           tone === "pass"
-            ? "text-emerald-300"
+            ? "text-[#B7F34A]"
             : tone === "fail"
-            ? "text-rose-300"
-            : "text-violet-50",
+            ? "text-[#FF6B6B]"
+            : "text-[#F1F5F2]",
         ].join(" ")}
       >
         {value}
@@ -694,17 +734,17 @@ function Diff({
   ok: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-white/8 bg-black/30 p-2.5">
+    <div className="border border-[#2A332F] bg-[#0A0F0E] p-2.5 rounded">
       <p
         className={[
-          "mb-1 text-[10px] font-semibold uppercase",
-          ok ? "text-emerald-300/70" : "text-rose-300/70",
+          "mb-1 text-[10px] font-mono font-bold uppercase",
+          ok ? "text-[#B7F34A]" : "text-[#FF6B6B]",
         ].join(" ")}
       >
         {label}
       </p>
-      <pre className="overflow-x-auto font-mono text-xs whitespace-pre-wrap text-violet-100">
-        {body || <span className="italic opacity-50">(empty)</span>}
+      <pre className="overflow-x-auto font-mono text-xs whitespace-pre-wrap text-[#F1F5F2]">
+        {body || <span className="italic text-[#6F7B75]">(empty)</span>}
       </pre>
     </div>
   );

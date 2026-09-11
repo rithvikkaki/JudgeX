@@ -92,6 +92,13 @@ class Settings(BaseSettings):
         return "*" not in self.cors_origin_list
 
     @property
+    def cors_origin_regex(self) -> str | None:
+        """Allow any port on localhost or 127.0.0.1 in development mode so Vite on alternate ports (5174, 5175, etc.) can connect."""
+        if not self.is_production:
+            return r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
+        return None
+
+    @property
     def admin_email_set(self) -> set[str]:
         return {
             email.strip().lower()

@@ -57,7 +57,7 @@ COPY . .
 
 # Run as an unprivileged user. This is defence in depth for the *API*; the
 # sandbox applies its own, much stricter, per-submission isolation.
-RUN useradd --create-home --uid 10001 judge \
+RUN useradd --create-home --uid 10001 --groups nogroup judge \
     && mkdir -p /tmp/judge \
     && chown -R judge:judge /app /tmp/judge
 USER judge

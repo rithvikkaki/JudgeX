@@ -84,15 +84,15 @@ export function Problems() {
             }}
           >
             {DIFFICULTIES.map((d) => (
-              <option key={d} value={d} className="bg-slate-900 text-white">
+              <option key={d} value={d} className="bg-[#141A18] text-[#F1F5F2]">
                 {d === "All" ? "All Difficulties" : d}
               </option>
             ))}
           </Select>
         </div>
 
-        <div className="ml-auto text-sm text-violet-200/50">
-          Showing <span className="font-semibold text-violet-100">{total}</span> problems
+        <div className="ml-auto text-xs font-mono text-[#A7B2AC]">
+          INDEX: <span className="font-semibold text-[#B7F34A]">{total}</span> RECORDS
         </div>
       </div>
 
@@ -100,16 +100,16 @@ export function Problems() {
         <Alert tone="fail">{error}</Alert>
       ) : loading ? (
         <div className="space-y-3">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full rounded" />
+          <Skeleton className="h-12 w-full rounded" />
+          <Skeleton className="h-12 w-full rounded" />
+          <Skeleton className="h-12 w-full rounded" />
         </div>
       ) : problems.length === 0 ? (
-        <Card solid>
+        <Card className="bg-[#141A18] border border-[#2A332F]">
           <EmptyState
-            title="No problems found"
-            description="Try adjusting your search criteria or difficulty filter."
+            title="No problems matched query"
+            description="Try adjusting your search query or difficulty criteria."
           />
         </Card>
       ) : (
@@ -117,26 +117,26 @@ export function Problems() {
           <Table>
             <Thead>
               <Tr>
-                <Th className="w-12">Status</Th>
-                <Th>Title</Th>
-                <Th className="w-32">Difficulty</Th>
+                <Th className="w-20 text-center">Status</Th>
+                <Th>Problem Title</Th>
+                <Th className="w-36">Difficulty</Th>
                 <Th className="w-32 text-right">Action</Th>
               </Tr>
             </Thead>
             <Tbody>
               {problems.map((p) => (
                 <Tr key={p.id}>
-                  <Td>
+                  <Td className="text-center font-mono">
                     {user && p.solved_by_me ? (
-                      <Badge tone="pass">✓</Badge>
+                      <Badge tone="pass">✓ SOLVED</Badge>
                     ) : (
-                      <span className="text-violet-300/30">—</span>
+                      <span className="text-[#6F7B75]">—</span>
                     )}
                   </Td>
                   <Td>
                     <Link
                       to={`/problems/${p.slug}`}
-                      className="font-medium text-violet-100 hover:text-violet-300 transition-colors"
+                      className="font-mono text-sm font-semibold text-[#F1F5F2] hover:text-[#B7F34A] transition-colors"
                     >
                       {p.title}
                     </Link>
@@ -147,7 +147,7 @@ export function Problems() {
                   <Td className="text-right">
                     <Link
                       to={`/problems/${p.slug}`}
-                      className="btn-ghost inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold text-violet-100"
+                      className="btn-lime px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider inline-block"
                     >
                       Solve →
                     </Link>
@@ -159,23 +159,23 @@ export function Problems() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-white/8 pt-4">
+            <div className="flex items-center justify-between border-t border-[#2A332F] pt-4 font-mono text-xs">
               <button
                 disabled={offset === 0}
                 onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
-                className="btn-ghost rounded-lg px-4 py-2 text-sm disabled:opacity-40"
+                className="btn-ghost px-3 py-1.5 border border-[#2A332F] text-[#A7B2AC] disabled:opacity-30"
               >
-                ← Previous
+                ← PREV
               </button>
-              <span className="text-xs font-medium text-violet-200/60">
-                Page {page} of {totalPages}
+              <span className="text-[#6F7B75]">
+                PAGE {page} OF {totalPages}
               </span>
               <button
                 disabled={offset + PAGE_SIZE >= total}
                 onClick={() => setOffset((o) => o + PAGE_SIZE)}
-                className="btn-ghost rounded-lg px-4 py-2 text-sm disabled:opacity-40"
+                className="btn-ghost px-3 py-1.5 border border-[#2A332F] text-[#A7B2AC] disabled:opacity-30"
               >
-                Next →
+                NEXT →
               </button>
             </div>
           )}

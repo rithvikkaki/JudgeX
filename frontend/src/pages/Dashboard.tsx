@@ -107,11 +107,11 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card solid className="p-6">
-      <div className="mb-5">
-        <h2 className="text-base font-semibold text-violet-50">{title}</h2>
+    <Card className="p-6 bg-[#141A18] border border-[#2A332F] rounded-md shadow-lg">
+      <div className="mb-5 pb-3 border-b border-[#2A332F]">
+        <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-[#F1F5F2]">{title}</h2>
         {subtitle && (
-          <p className="mt-0.5 text-xs text-violet-200/45">{subtitle}</p>
+          <p className="mt-1 text-xs text-[#A7B2AC] font-sans">{subtitle}</p>
         )}
       </div>
       {children}
@@ -125,10 +125,10 @@ function VerdictChart({ data }: { data: DashboardData }) {
 
   return (
     <ChartCard
-      title="Verdict distribution"
-      subtitle={`${data.total_submissions} submissions total`}
+      title="Verdict Distribution"
+      subtitle={`${data.total_submissions} total submissions processed`}
     >
-      <ul className="space-y-3.5">
+      <ul className="space-y-4">
         {rows.map((row) => {
           const share =
             data.total_submissions > 0
@@ -138,16 +138,16 @@ function VerdictChart({ data }: { data: DashboardData }) {
             <li key={row.verdict}>
               <div className="mb-1.5 flex items-center gap-2">
                 <VerdictBadge verdict={row.verdict} />
-                <span className="ml-auto font-mono text-sm font-semibold tabular-nums text-violet-50">
+                <span className="ml-auto font-mono text-xs font-semibold tabular-nums text-[#F1F5F2]">
                   {row.count}
                 </span>
-                <span className="w-11 text-right font-mono text-xs tabular-nums text-violet-200/45">
+                <span className="w-12 text-right font-mono text-xs tabular-nums text-[#6F7B75]">
                   {share.toFixed(0)}%
                 </span>
               </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-white/6">
+              <div className="h-2 overflow-hidden bg-[#0A0F0E] border border-[#2A332F] rounded">
                 <div
-                  className="h-full rounded-full bg-violet-400 transition-[width] duration-700"
+                  className="h-full bg-[#B7F34A] transition-[width] duration-500"
                   style={{ width: `${(row.count / max) * 100}%` }}
                 />
               </div>
@@ -167,8 +167,8 @@ function DifficultyChart({ data }: { data: DashboardData }) {
 
   return (
     <ChartCard
-      title="Progress by difficulty"
-      subtitle="Distinct problems solved against those available"
+      title="Progress by Difficulty"
+      subtitle="Distinct problems solved against total available repository"
     >
       <ul className="space-y-4">
         {rows.map((row) => {
@@ -179,19 +179,19 @@ function DifficultyChart({ data }: { data: DashboardData }) {
           return (
             <li key={row.difficulty}>
               <div className="mb-1.5 flex items-baseline justify-between">
-                <span className="text-sm font-medium text-violet-100">
+                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#F1F5F2]">
                   {row.difficulty}
                 </span>
-                <span className="font-mono text-sm tabular-nums text-violet-200/70">
+                <span className="font-mono text-xs tabular-nums text-[#A7B2AC]">
                   {row.solved}
-                  <span className="text-violet-200/35">
+                  <span className="text-[#6F7B75]">
                     {" "}
                     / {row.total_available}
                   </span>
                 </span>
               </div>
               <div
-                className="h-2.5 overflow-hidden rounded-full bg-white/6"
+                className="h-2 overflow-hidden bg-[#0A0F0E] border border-[#2A332F] rounded"
                 role="meter"
                 aria-valuenow={row.solved}
                 aria-valuemin={0}
@@ -199,7 +199,7 @@ function DifficultyChart({ data }: { data: DashboardData }) {
                 aria-label={`${row.difficulty} problems solved`}
               >
                 <div
-                  className="h-full rounded-full bg-violet-400 transition-[width] duration-700"
+                  className="h-full bg-[#B7F34A] transition-[width] duration-500"
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -219,27 +219,27 @@ function LanguageChart({ data }: { data: DashboardData }) {
 
   return (
     <ChartCard
-      title="Languages"
-      subtitle="Accepted portion of each language's submissions"
+      title="Language Breakdown"
+      subtitle="Execution volume and acceptance ratio per runtime"
     >
       <ul className="space-y-4">
         {rows.map((row) => (
           <li key={row.language}>
-            <div className="mb-1.5 flex items-baseline justify-between">
-              <span className="text-sm font-medium text-violet-100">
+            <div className="mb-1.5 flex items-baseline justify-between font-mono text-xs">
+              <span className="font-semibold text-[#F1F5F2]">
                 {LANGUAGE_LABELS[row.language] ?? row.language}
               </span>
-              <span className="font-mono text-xs tabular-nums text-violet-200/60">
-                {row.accepted} accepted / {row.submissions}
+              <span className="tabular-nums text-[#A7B2AC]">
+                {row.accepted} accepted / {row.submissions} total
               </span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-white/6">
+            <div className="h-2 overflow-hidden bg-[#0A0F0E] border border-[#2A332F] rounded">
               <div
-                className="h-full rounded-full bg-violet-500/45"
+                className="h-full bg-[#1A211F]"
                 style={{ width: `${(row.submissions / max) * 100}%` }}
               >
                 <div
-                  className="h-full rounded-full bg-violet-300 transition-[width] duration-700"
+                  className="h-full bg-[#B7F34A] transition-[width] duration-500"
                   style={{
                     width: `${
                       row.submissions > 0
@@ -254,20 +254,20 @@ function LanguageChart({ data }: { data: DashboardData }) {
         ))}
       </ul>
 
-      <div className="mt-5 flex items-center gap-4 border-t border-white/8 pt-4 text-xs text-violet-200/50">
-        <span className="flex items-center gap-1.5">
+      <div className="mt-5 flex items-center gap-6 border-t border-[#2A332F] pt-4 text-xs font-mono text-[#A7B2AC]">
+        <span className="flex items-center gap-2">
           <span
-            className="size-2.5 rounded-full bg-violet-300"
+            className="size-2 rounded-full bg-[#B7F34A]"
             aria-hidden="true"
           />
           Accepted
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-2">
           <span
-            className="size-2.5 rounded-full bg-violet-500/45"
+            className="size-2 rounded-full bg-[#1A211F] border border-[#2A332F]"
             aria-hidden="true"
           />
-          All submissions
+          Total Submissions
         </span>
       </div>
     </ChartCard>
@@ -276,29 +276,29 @@ function LanguageChart({ data }: { data: DashboardData }) {
 
 function RecentActivity({ data }: { data: DashboardData }) {
   return (
-    <ChartCard title="Recent activity" subtitle="Your last ten submissions">
+    <ChartCard title="Execution Stream" subtitle="Your 10 most recent submission records">
       {data.recent_submissions.length === 0 ? (
-        <p className="py-6 text-center text-sm text-violet-200/45">
-          No submissions yet.
+        <p className="py-6 text-center text-xs font-mono text-[#6F7B75]">
+          No execution telemetry recorded yet.
         </p>
       ) : (
         <ul className="space-y-2">
           {data.recent_submissions.map((submission) => (
             <li
               key={submission.id}
-              className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/3 px-3 py-2.5"
+              className="flex items-center gap-3 border border-[#2A332F] bg-[#1A211F]/60 px-3 py-2 transition-colors hover:bg-[#1A211F] rounded"
             >
               <VerdictBadge verdict={submission.verdict} />
-              <span className="min-w-0 flex-1 truncate font-mono text-xs text-violet-200/55">
+              <span className="min-w-0 flex-1 truncate font-mono text-xs font-semibold text-[#F1F5F2]">
                 {LANGUAGE_LABELS[submission.language] ?? submission.language}
               </span>
-              <span className="font-mono text-xs tabular-nums text-violet-200/45">
+              <span className="font-mono text-xs tabular-nums text-[#A7B2AC]">
                 {submission.execution_time_ms.toFixed(0)} ms
               </span>
-              <span className="hidden font-mono text-xs tabular-nums text-violet-200/45 sm:inline">
+              <span className="hidden font-mono text-xs tabular-nums text-[#A7B2AC] sm:inline">
                 {formatMemory(submission.memory_kb)}
               </span>
-              <span className="shrink-0 text-xs text-violet-200/35">
+              <span className="shrink-0 text-[11px] font-mono text-[#6F7B75]">
                 {relativeTime(submission.created_at)}
               </span>
             </li>
@@ -308,9 +308,9 @@ function RecentActivity({ data }: { data: DashboardData }) {
 
       <Link
         to="/submissions"
-        className="mt-4 block text-center text-sm text-violet-300 hover:text-violet-200"
+        className="mt-4 block text-center font-mono text-xs font-semibold text-[#B7F34A] hover:underline uppercase tracking-wider"
       >
-        View all submissions →
+        View Submissions Archive →
       </Link>
     </ChartCard>
   );

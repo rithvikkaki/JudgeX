@@ -60,6 +60,15 @@ async def lifespan(app: FastAPI):
     # migration step.
     Base.metadata.create_all(bind=engine)
 
+    if settings.AUTO_SEED:
+        try:
+            from scripts.seed import seed
+
+            seed(reset=False)
+            logger.info("Idempotent database seed verified.")
+        except Exception:  # noqa: BLE001
+            logger.exception("Auto-seed failed during startup")
+
     from app.execution.engine import get_backend
 
     backend = get_backend()

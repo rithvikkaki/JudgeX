@@ -1,0 +1,19 @@
+name: JudgeX 24/7 Cloud Keep-Alive & Health Monitor
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping JudgeX API Liveness Endpoint
+        env:
+          API_URL: ${{ vars.JUDGEX_API_URL || 'https://judgex-api.onrender.com' }}
+        run: |
+          echo "Pinging ${API_URL}/api/v1/ping ..."
+          curl -fsS --max-time 30 --retry 3 --retry-delay 5 "${API_URL}/api/v1/ping"
+          echo ""
+          echo "Keep-alive ping succeeded."

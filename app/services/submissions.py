@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 import logging
+import threading
 
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import SessionLocal
 from app.execution.judge import MAX_ERROR_CHARS, judge_submission
 from app.models.enums import SubmissionStatus, Verdict
@@ -15,6 +18,7 @@ from app.models.test_case import TestCase
 logger = logging.getLogger(__name__)
 
 SAFE_INTERNAL_ERROR = "The judge encountered an internal error"
+_IN_PROCESS_POOL = ThreadPoolExecutor(max_workers=2, thread_name_prefix="judge-worker")
 
 
 def count_problem_test_cases(db: Session, problem_id: int) -> int:
@@ -51,6 +55,16 @@ def create_queued_submission(
 
 
 def enqueue_submission_judging(submission_id: int) -> None:
+    if settings.IN_PROCESS_WORKER:
+        thread = threading.Thread(
+            target=judge_queued_submission,
+            args=(submission_id,),
+            daemon=True,
+            name=f"judge-sub-{submission_id}",
+        )
+        thread.start()
+        return
+
     from app.tasks.submissions import judge_submission_task
 
     judge_submission_task.delay(submission_id)
@@ -149,6 +163,35 @@ def _store_failed_result(db: Session, submission_id: int, message: str) -> None:
     )
     db.commit()
 
+
+def _run_code_direct(
+    source_code: str,
+    language: str,
+    stdin: str,
+    time_limit_ms: int | None = None,
+    memory_limit_mb: int | None = None,
+) -> dict:
+    from app.execution.judge import run_once
+
+    result = run_once(
+        source_code=source_code,
+        language=language,
+        stdin=stdin,
+        time_limit_ms=time_limit_ms,
+        memory_limit_mb=memory_limit_mb,
+    )
+    return {
+        "outcome": result.outcome.value,
+        "stdout": result.stdout,
+        "stderr": result.stderr or result.detail,
+        "exit_code": result.exit_code,
+        "execution_time_ms": result.duration_ms,
+        "memory_kb": result.memory_kb,
+        "compile_output": result.compile_output or None,
+        "backend": result.backend,
+    }
+
+
 def execute_run_code(
     *,
     source_code: str,
@@ -157,6 +200,20 @@ def execute_run_code(
     time_limit_ms: int | None = None,
     memory_limit_mb: int | None = None,
 ) -> dict:
+    if settings.IN_PROCESS_WORKER:
+        future = _IN_PROCESS_POOL.submit(
+            _run_code_direct,
+            source_code=source_code,
+            language=language,
+            stdin=stdin,
+            time_limit_ms=time_limit_ms,
+            memory_limit_mb=memory_limit_mb,
+        )
+        try:
+            return future.result(timeout=30)
+        except FuturesTimeoutError as exc:
+            raise TimeoutError("Execution timed out waiting for worker") from exc
+
     from app.tasks.submissions import run_code_task
 
     try:

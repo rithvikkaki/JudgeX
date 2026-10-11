@@ -18,13 +18,10 @@ services:
   # ---------------------------------------------------------------- API --
   - type: web
     name: judgex-api
-    runtime: python
+    runtime: docker
     plan: free
     region: oregon
     branch: main
-
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --workers 2
 
     healthCheckPath: /api/v1/ping
 
@@ -40,21 +37,25 @@ services:
         generateValue: true
 
       # ---- Runtime -------------------------------------------------------
-      - key: PYTHON_VERSION
-        value: "3.11.9"
       - key: ENVIRONMENT
         value: production
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: AUTO_SEED
+        value: "true"
+      - key: IN_PROCESS_WORKER
+        value: "true"
       # Comma-separated list of allowed origins.
       - key: CORS_ORIGINS
         sync: false          # e.g. https://judgex-web.onrender.com
 
       # ---- Execution engine ----------------------------------------------
-      # No Docker socket on Render free tier. ALLOW_UNSAFE_LOCAL_EXECUTION defaults
-      # to false so production safely rejects execution unless explicitly enabled.
+      # Inside the isolated Linux container, LocalBackend enforces POSIX rlimits
+      # (RLIMIT_AS, RLIMIT_CPU, RLIMIT_NPROC, RLIMIT_FSIZE) for Python/C++/Java.
       - key: EXECUTION_BACKEND
-        value: auto
+        value: local
       - key: ALLOW_UNSAFE_LOCAL_EXECUTION
-        value: "false"
+        value: "true"
       - key: EXECUTION_TIME_LIMIT_MS
         value: "2000"
       - key: EXECUTION_MEMORY_LIMIT_MB

@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     API_VERSION: str = "1.0.0"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    AUTO_SEED: bool = False
 
     # ---- Database --------------------------------------------------------
     DATABASE_URL: str = "sqlite:///./online_judge.db"
@@ -40,6 +41,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     CELERY_BROKER_URL: str = ""
     CELERY_RESULT_BACKEND: str = ""
+    IN_PROCESS_WORKER: bool = False
 
     # ---- Security --------------------------------------------------------
     SECRET_KEY: str = ""

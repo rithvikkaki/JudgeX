@@ -89,7 +89,7 @@ export function Solve() {
   // Polling effect for async submissions
   useEffect(() => {
     if (!result) return;
-    const status = result.status;
+    const status = (result.status ?? "").toUpperCase();
     if (status !== "QUEUED" && status !== "RUNNING") return;
 
     let cancelled = false;
@@ -100,8 +100,11 @@ export function Solve() {
         const updated = await api.submission(result.id);
         if (!cancelled) {
           setResult(updated);
-          if (updated.status === "QUEUED" || updated.status === "RUNNING") {
-            timerId = setTimeout(poll, 1500);
+          const nextStatus = (updated.status ?? "").toUpperCase();
+          if (nextStatus === "QUEUED" || nextStatus === "RUNNING") {
+            timerId = setTimeout(poll, 1000);
+          } else if (updated.verdict === "Accepted") {
+            setProblem((prev) => (prev ? { ...prev, solved_by_me: true } : prev));
           }
         }
       } catch {
@@ -109,7 +112,7 @@ export function Solve() {
       }
     };
 
-    timerId = setTimeout(poll, 1500);
+    timerId = setTimeout(poll, 800);
 
     return () => {
       cancelled = true;
@@ -189,8 +192,9 @@ export function Solve() {
     );
   }
 
+  const resultStatusUpper = (result?.status ?? "").toUpperCase();
   const isPendingJudging =
-    result?.status === "QUEUED" || result?.status === "RUNNING";
+    resultStatusUpper === "QUEUED" || resultStatusUpper === "RUNNING";
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
@@ -508,7 +512,7 @@ function JudgingState({ mode }: { mode: "run" | "submit" }) {
 }
 
 function AsyncJudgingState({ status }: { status: string }) {
-  const isQueued = status === "QUEUED";
+  const isQueued = (status ?? "").toUpperCase() === "QUEUED";
 
   return (
     <div className="flex flex-col items-center gap-3 py-8 text-center font-mono">
@@ -533,7 +537,7 @@ function AsyncJudgingState({ status }: { status: string }) {
 function SubmissionResult({ submission }: { submission: Submission }) {
   const passed = submission.verdict === "Accepted";
 
-  if (submission.status === "FAILED") {
+  if ((submission.status ?? "").toUpperCase() === "FAILED") {
     return (
       <div className="space-y-4 font-mono text-xs">
         <Badge tone="fail">✕ SYSTEM EXECUTION FAILED</Badge>

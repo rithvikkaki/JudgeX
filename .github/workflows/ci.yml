@@ -16,6 +16,8 @@ jobs:
       DATABASE_URL: sqlite:///./ci.db
       SECRET_KEY: ci-secret-key-not-used-anywhere-else
       EXECUTION_BACKEND: local
+      ALLOW_UNSAFE_LOCAL_EXECUTION: "true"
+      RATE_LIMIT_ENABLED: "false"
       ADMIN_EMAILS: admin@example.com
       ENVIRONMENT: development
 

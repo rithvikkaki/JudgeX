@@ -10,14 +10,22 @@ solution fails here rather than confusing the first user who tries it.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+os.environ.setdefault("EXECUTION_BACKEND", "local")
+os.environ.setdefault("ALLOW_UNSAFE_LOCAL_EXECUTION", "true")
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
+
 from fastapi.testclient import TestClient  # noqa: E402
 
+import app.routes.submissions as submissions_routes  # noqa: E402
+from app.config import settings  # noqa: E402
 from app.main import app  # noqa: E402
+from app.services.submissions import judge_queued_submission  # noqa: E402
 
 API = "/api/v1"
 
@@ -75,6 +83,11 @@ REFERENCE_SOLUTIONS: dict[str, str] = {
 
 
 def main() -> int:
+    object.__setattr__(settings, "ALLOW_UNSAFE_LOCAL_EXECUTION", True)
+    object.__setattr__(settings, "RATE_LIMIT_ENABLED", False)
+    app.state.limiter.enabled = False
+    submissions_routes.enqueue_submission_judging = lambda submission_id: None
+
     client = TestClient(app)
 
     login = client.post(
@@ -110,14 +123,22 @@ def main() -> int:
                 "source_code": solution,
             },
         )
-        body = response.json()
-        verdict = body.get("verdict")
+        if response.status_code not in (200, 202):
+            failures.append(f"{problem['title']}: HTTP {response.status_code} {response.text}")
+            continue
+
+        queued = response.json()
+        judge_queued_submission(queued["id"])
+        final_resp = client.get(f"{API}/submissions/{queued['id']}", headers=headers)
+        body = final_resp.json()
+        verdict = body.get("verdict") or "Unknown"
         accepted = verdict == "Accepted"
+        exec_ms = body.get("execution_time_ms") or 0.0
 
         print(
             f"  {'OK  ' if accepted else 'FAIL'} {problem['title']:<32} "
             f"{verdict:<22} {body.get('passed_tests')}/{body.get('total_tests')} tests "
-            f"{body.get('execution_time_ms')} ms"
+            f"{exec_ms} ms"
         )
 
         if not accepted:

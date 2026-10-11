@@ -1,228 +1,248 @@
 # JudgeX — Online Coding Judge & Execution Engine
 
-**A modern, production-grade competitive programming judge that compiles, sandboxes, and evaluates untrusted code with containerized isolation.**
+[![Live Web App](https://img.shields.io/badge/Live_Web_App-judgex--web.onrender.com-B7F34A?style=for-the-badge&logo=render&logoColor=black)](https://judgex-web.onrender.com)
+[![Live API](https://img.shields.io/badge/Live_API-judgex--api.onrender.com-10B981?style=for-the-badge&logo=fastapi&logoColor=white)](https://judgex-api.onrender.com)
+[![Swagger Docs](https://img.shields.io/badge/OpenAPI_Docs-%2Fdocs-3B82F6?style=for-the-badge&logo=openapiinitiative&logoColor=white)](https://judgex-api.onrender.com/docs)
+[![24/7 Cloud Keep-Alive](https://github.com/rithvikkaki/JudgeX/actions/workflows/keepalive.yml/badge.svg)](https://github.com/rithvikkaki/JudgeX/actions/workflows/keepalive.yml)
 
-JudgeX allows developers and competitive programmers to submit code in **Python 3.11**, **C++17 (GCC)**, or **Java 21**, executing submissions against test suites inside an isolated sandbox with strict resource limits (Time, Memory, CPU, Process count, and Network isolation).
+**A modern, production-grade competitive programming judge that compiles, sandboxes, and evaluates untrusted code in Python, C++, and Java with real-time telemetry across Desktop and Mobile.**
+
+---
+
+## 🌐 Live Production Deployment (24/7 Cloud)
+
+| Service | Live URL | Details |
+| :--- | :--- | :--- |
+| **Frontend Web Application (Desktop & Mobile)** | **[https://judgex-web.onrender.com](https://judgex-web.onrender.com)** | React 19 + TypeScript + Tailwind CSS v4 + CodeMirror 6 on Render Global CDN |
+| **Problems Archive** | **[https://judgex-web.onrender.com/problems](https://judgex-web.onrender.com/problems)** | 6 curated algorithmic problems (Easy, Medium, Hard) with sample & hidden test suites |
+| **Live Practice Contest & Standings** | **[https://judgex-web.onrender.com/contests](https://judgex-web.onrender.com/contests)** | Real-time ICPC-style contest registration, problem scoring, and live leaderboard |
+| **Backend REST API** | **[https://judgex-api.onrender.com](https://judgex-api.onrender.com)** | FastAPI 0.116 + Dockerized `python3` / `g++` / `openjdk-17` execution sandbox |
+| **Interactive Swagger / OpenAPI Docs** | **[https://judgex-api.onrender.com/docs](https://judgex-api.onrender.com/docs)** | Live interactive API explorer |
+| **System & PostgreSQL 16 Health Telemetry** | **[https://judgex-api.onrender.com/api/v1/health](https://judgex-api.onrender.com/api/v1/health)** | Live database latency, active sandbox backend, and compiler toolchain status |
+
+### 🔑 Demo Credentials (Pre-Seeded in Production)
+You can register a new account or sign in immediately with the pre-seeded demo account:
+- **Demo Account:** `demo@example.com` / `DemoPass123`
 
 ---
 
 ## 📌 Table of Contents
 
+- [Live Production Deployment](#-live-production-deployment-247-cloud)
 - [Project Overview](#-project-overview)
 - [Key Features](#-key-features)
-- [Architecture](#-architecture)
+- [System Architecture](#-system-architecture)
 - [Tech Stack](#-tech-stack)
 - [Security Model & Sandboxing](#-security-model--sandboxing)
-- [Project Screenshots](#-project-screenshots)
-- [Getting Started](#-getting-started)
-- [Running with Docker](#-running-with-docker)
-- [API Overview](#-api-overview)
-- [Future Improvements](#-future-improvements)
+- [Database Integrity & Deterministic Backup Scripts](#-database-integrity--deterministic-backup-scripts)
+- [Production Screenshots (Desktop & Mobile)](#-production-screenshots-desktop--mobile)
+- [Getting Started Locally](#-getting-started-locally)
+- [Running with Docker Compose](#-running-with-docker-compose)
+- [API Reference](#-api-reference)
 
 ---
 
 ## 🎯 Project Overview
 
-JudgeX is built to solve the core engineering challenge of competitive programming platforms: **safe, fast, and accurate execution of untrusted user code on server infrastructure**.
+JudgeX solves the core engineering challenge of online coding platforms: **safe, fast, and deterministic compilation and execution of untrusted user code**.
 
-- **High-Performance Judging Pipeline**: Asynchronous submission processing using Celery workers backed by Redis queues.
-- **Pluggable Sandbox Engine**: Switch seamlessly between a hardened Docker container backend and a POSIX `rlimit` process sandbox.
-- **Swiss Engineering Design System**: Built with a dark Graphite + Electric Lime theme optimized for developer focus and technical precision.
-- **Comprehensive Platform**: Features problem archives, contest management with ICPC-style scoring, submission analytics, and detailed verdict telemetry.
+- **Multi-Language Execution**: Native compilation and execution for **Python 3.11**, **C++17 (`g++ -O2`)**, and **Java (`openjdk-17-jdk-headless` / `eclipse-temurin:21-jdk`)** with sub-millisecond timing and resident memory (`VmHWM`) telemetry.
+- **Compile-Once SHA-256 Artifact Cache**: Multi-test-case submissions compile once on Test Case #1 and reuse the verified compiled binary/bytecode across remaining test cases in isolated per-test directories, reducing C++/Java judging latency by >75%.
+- **Dual Execution Modes**:
+  - **Distributed Docker Mode (`docker-compose.yml`)**: Asynchronous Celery workers backed by Redis spawning ephemeral, network-isolated (`--net=none`), read-only Docker containers.
+  - **Cloud Container Mode (`render.yaml` / `Dockerfile`)**: Single-container Linux deployment with in-process worker thread pool (`IN_PROCESS_WORKER=true`) and kernel POSIX `rlimit` enforcement (`RLIMIT_AS`, `RLIMIT_CPU`, `RLIMIT_NPROC`, `RLIMIT_FSIZE`, `RLIMIT_CORE`) running under unprivileged UID `10001`.
+- **Responsive Desktop & Mobile Workbench**: Split-pane IDE on desktop (`1440×900`) and dedicated `[ PROBLEM ]` `[ CODE ]` `[ OUTPUT ]` workspace switcher on mobile (`375×812`) with zero horizontal overflow.
 
 ---
 
 ## ✨ Key Features
 
-- **Multi-Language Execution**: Support for Python 3.11, C++17, and Java 21 with precise execution timing and memory metrics.
-- **7 Detailed Verdict Outcomes**: Accepted (`AC`), Wrong Answer (`WA`), Time Limit Exceeded (`TLE`), Memory Limit Exceeded (`MLE`), Runtime Error (`RTE`), Compilation Error (`CE`), and Output Limit Exceeded (`OLE`).
-- **Asynchronous Task Queue**: Celery + Redis judging pipeline prevents web worker blocking during peak load.
-- **Contest Engine & Standings**: Real-time ICPC penalty calculations, tie-aware ranking, submission timing validation, and sealed problem statements.
-- **Developer Workstation UI**: Split-pane problem workbench with CodeMirror 6, custom input execution (`Run Custom`), and responsive mobile workspace navigation (`[PROBLEM] [CODE] [OUTPUT]`).
-- **Role-Based Access Control**: Admin authorization for problem creation, test case bulk management, and contest configuration.
+- **7 Verdict Classifications**: Accepted (`Accepted`), Wrong Answer (`Wrong Answer`), Time Limit Exceeded (`Time Limit Exceeded`), Memory Limit Exceeded (`Memory Limit Exceeded`), Runtime Error (`Runtime Error`), Compilation Error (`Compilation Error`), and Output Limit Exceeded (`Output Limit Exceeded`).
+- **Auto-Polling Async Submissions**: Submitting a solution returns `202 Accepted` (`Queued`) immediately while the frontend automatically polls `GET /api/v1/submissions/{id}` until the final verdict and per-testcase telemetry arrive.
+- **Custom Input Scratchpad (`Run Custom`)**: Test arbitrary `stdin` inputs and inspect `stdout`, `stderr`, exit code, execution time, and peak memory without recording a formal submission.
+- **Contest Engine & Live Scoreboard**: Join active contests, submit contest-scoped solutions, and track live rankings with penalty-minute tie-breaking.
+- **24/7 Cloud Availability**: Automated GitHub Actions keep-alive workflow (`.github/workflows/keepalive.yml`) pings the lightweight `/api/v1/ping` endpoint every 10 minutes without consuming Neon PostgreSQL compute hours during idle periods.
 
 ---
 
-## 🏗 Architecture
+## 🏗 System Architecture
 
 ```mermaid
 flowchart LR
-    User(["Developer / Candidate"])
+    User(["Developer (Desktop / Mobile)"])
 
-    subgraph FE["Frontend App"]
-        Vite["React 19 + TypeScript<br/>Tailwind CSS v4 · CodeMirror 6"]
+    subgraph CDN["Render Static CDN"]
+        FE["React 19 + TypeScript SPA<br/>Tailwind CSS v4 · CodeMirror 6"]
     end
 
-    subgraph API_Layer["API Gateway"]
-        FastAPI["FastAPI 0.116 Engine<br/>OAuth2 JWT · SlowAPI Limiter"]
+    subgraph Cloud["Render Docker Service (Linux bookworm)"]
+        FastAPI["FastAPI 0.116 API<br/>JWT Auth · SlowAPI Rate Limiter"]
+        Worker["Async Judge Worker Pool<br/>Celery / In-Process ThreadPool"]
+        Sandbox["Isolated Execution Sandbox<br/>Python 3.11 · GCC C++17 · OpenJDK 17<br/>POSIX rlimits / Docker SDK"]
     end
 
-    subgraph Queue_Layer["Async Judging Pipeline"]
-        Redis[("Redis 7<br/>Broker & Task Results")]
-        Celery["Celery Worker Pool<br/>Isolated Non-Root UID 10001"]
+    subgraph DB["Neon Serverless PostgreSQL 16"]
+        Postgres[("PostgreSQL 16.15<br/>Users · Problems · Submissions · Contests")]
     end
 
-    subgraph Storage["Persistence"]
-        Postgres[("PostgreSQL 16 DB<br/>SQLAlchemy 2.0 ORM")]
-    end
-
-    subgraph Sandbox["Sandbox Execution"]
-        DockerEngine["Docker SDK Sandbox<br/>Read-only Root · No Network · GID 65534"]
+    subgraph Automation["GitHub Actions Cloud"]
+        KeepAlive["24/7 Keep-Alive Cron<br/>GET /api/v1/ping"]
     end
 
     User --> FE
-    FE -->|"REST / JSON + JWT"| FastAPI
+    FE -->|"HTTPS REST + Bearer JWT"| FastAPI
     FastAPI --> Postgres
-    FastAPI -->|"Enqueues Judging Tasks"| Redis
-    Redis --> Celery
-    Celery --> Postgres
-    Celery -->|"Spawns Scratch Container"| DockerEngine
+    FastAPI -->|"Async Dispatch"| Worker
+    Worker --> Sandbox
+    Worker --> Postgres
+    KeepAlive -->|"Every 10 min"| FastAPI
 ```
 
 ---
 
 ## 🛠 Tech Stack
 
-| Layer | Technology | Rationale |
-|---|---|---|
-| **Frontend** | React 19 + TypeScript + Vite | Type-safe UI components, sub-second HMR, optimized production chunks. |
-| **Styling** | Tailwind CSS v4 | Graphite + Electric Lime developer token system using native `@theme`. |
-| **Code Editor** | CodeMirror 6 | Embedded syntax modes for Python, C++, Java with local draft retention. |
-| **Backend API** | FastAPI 0.116 + Pydantic v2 | High-concurrency async Python framework with automatic OpenAPI schemas. |
-| **Database** | PostgreSQL 16 / SQLite | SQLAlchemy 2.0 ORM with typed mappings; SQLite fallback for zero-setup dev. |
-| **Task Queue** | Celery 5 + Redis 7 | Asynchronous, non-blocking submission judging pipeline. |
-| **Sandbox Engine** | Docker SDK & POSIX `rlimits` | Isolated throwaway container execution with process namespace isolation. |
-| **Testing Suite** | Pytest 8 + HTTPX | Full backend integration test coverage (111 passing tests). |
+| Layer | Technology | Role |
+| :--- | :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite | SPA with deep-link routing and real-time submission polling |
+| **Styling** | Tailwind CSS v4 | Graphite & Electric Lime developer design system |
+| **Code Editor** | CodeMirror 6 | Syntax highlighting for Python, C++, and Java with `localStorage` draft persistence |
+| **Backend API** | FastAPI 0.116, Pydantic v2 | REST API, validation, JWT authentication, and rate limiting (`SlowAPI`) |
+| **Database** | PostgreSQL 16.15 (Neon) / SQLite | SQLAlchemy 2.0 ORM with automatic idempotent startup seeding (`AUTO_SEED=true`) |
+| **Task Execution** | Celery 5 + Redis 7 / ThreadPool | Asynchronous submission judging and custom code runs |
+| **Sandbox Engine** | Docker SDK & Linux POSIX `rlimit` | Memory, CPU, process-tree, and file-size isolation |
+| **Testing & QA** | Pytest (111 unit/integration tests) | Automated backend, security, packaging, and live production chaos test suites |
 
 ---
 
 ## 🔒 Security Model & Sandboxing
 
-Executing untrusted code requires defense in depth across multiple layers:
-
-1. **Non-Root Execution**: Worker processes run under unprivileged UID `10001`. Sandbox containers execute under UID/GID `65534` (`nobody`).
-2. **Network Isolation**: All submission containers run with `--net=none`, blocking outbound network access and data exfiltration attempts.
-3. **Resource Caps**:
-   - Wall-clock & CPU time limits (default 2000 ms).
-   - Memory allocation ceiling (default 128 MB).
-   - Process count limits (`PIDs=64`) to prevent fork bombs.
-   - Max output limit (`64 KB`) to prevent runaway stdout logging.
-4. **File System Security**: Scratch workdirs are created atomically with `mkdtemp` and permissions restricted to `0750` / `0770` with group `65534`. Root filesystem is read-only.
-5. **API & Socket Isolation**: The web API container has **NO access** to the Docker socket; only the dedicated judging worker interacts with the Docker engine.
+1. **Unprivileged Execution**: Container runs as non-root user `judge` (`UID 10001`). In Docker-socket mode, throwaway containers execute as `65534:65534` (`nobody:nogroup`) with `--read-only` root filesystems and `--net=none`.
+2. **Kernel Resource Ceilings (`app/execution/local_backend.py`)**:
+   - `RLIMIT_AS`: Hard virtual address space cap (default `128 MB`; JVM capped via `-Xmx128m`).
+   - `RLIMIT_CPU` & Process-Group Timeout: Wall-clock timer kills the entire process group (`os.killpg(SIGKILL)`) on timeout (default `2000 ms`).
+   - `RLIMIT_NPROC`: Caps child process spawning (`256` processes) to defeat fork bombs.
+   - `RLIMIT_FSIZE` & Output Truncation: Caps disk writes and truncates `stdout`/`stderr` at `64 KB` (`Outcome.OUTPUT_EXCEEDED`).
+   - `RLIMIT_CORE`: Disables core dumps (`0`).
+3. **Secret Isolation**: Child execution environments are stripped down to `PATH`, `HOME`, `LANG`, and Python encoding flags—application secrets (`DATABASE_URL`, `SECRET_KEY`) are never passed to user subprocesses.
 
 ---
 
-## 📸 Project Screenshots
+## 🛡 Database Integrity & Deterministic Backup Scripts
 
-### 1. Developer Workstation & Problem Workbench
-Split-pane interface featuring problem statement, CodeMirror syntax editor, and custom test input runner.
+The `scripts/` directory includes production-hardened PostgreSQL 16 backup, manifest generation, and restore verification utilities:
+- [`scripts/snapshot_manifest.py`](scripts/snapshot_manifest.py): Generates repeatable-read (`ISOLATION LEVEL REPEATABLE READ READ ONLY`) streaming SHA-256 content signatures and schema fingerprints across all 6 core tables without loading full tables into client memory.
+- [`scripts/verify_database.py`](scripts/verify_database.py): Verifies restored database identity, schema fingerprints, row counts, and canonical SHA-256 row digests.
+- [`scripts/backup_db.sh`](scripts/backup_db.sh) & [`scripts/test_restore.sh`](scripts/test_restore.sh): End-to-end backup and disposable restore verification scripts with conditional upload (`--if-none-match "*"`) and ETag-guarded cleanup (`--if-match`).
 
+---
+
+## 📸 Production Screenshots (Desktop & Mobile)
+
+### 1. Live Production Landing Page (`https://judgex-web.onrender.com`)
+![JudgeX Landing Page](docs/images/01_landing.png)
+
+### 2. Developer Workbench & Custom Code Execution (`Desktop 1440×900`)
 ![JudgeX Problem Workbench](docs/images/02_solve_workbench.png)
 
-### 2. Live Judging Verdict Telemetry
-Real-time verdict feedback with precise execution time (ms) and peak memory (MB) metrics.
-
+### 3. Live Auto-Polling Accepted Verdict & Test Case Telemetry
 ![Accepted Verdict Telemetry](docs/images/03_accepted_verdict.png)
 
-### 3. Technical Problem Archive
-Filterable problem catalogue with difficulty indicators and user completion tracking.
-
+### 4. Problem Archive (`https://judgex-web.onrender.com/problems`)
 ![JudgeX Problems Catalogue](docs/images/04_problems.png)
 
-### 4. Telemetry & User Dashboard
-Personal activity breakdown, verdict distribution, and contest participation history.
+### 5. Live Contest Standings & Scoreboard (`https://judgex-web.onrender.com/contests/1`)
+![JudgeX Contest Leaderboard](docs/images/06_contest_leaderboard.png)
 
+### 6. User Telemetry & Analytics Dashboard (`https://judgex-web.onrender.com/dashboard`)
 ![JudgeX User Dashboard](docs/images/05_dashboard.png)
 
+### 7. Responsive Mobile Workbench (`Mobile 375×812` — `[ PROBLEM ]` `[ CODE ]` `[ OUTPUT ]`)
+| Mobile Code Editor Pane (`[ CODE ]`) | Mobile Execution Output Pane (`[ OUTPUT ]`) |
+| :---: | :---: |
+| ![Mobile Code Pane](docs/images/07_mobile_workbench.png) | ![Mobile Output Pane](docs/images/08_mobile_output.png) |
+
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started Locally
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.10+
 - Node.js 18+
-- Docker Desktop (optional for local container sandboxing)
+- Docker Desktop (optional, for full multi-container Docker sandbox mode)
 
-### Quick Start (Local Process Sandbox)
+### 1. Clone the Repository
+```bash
+git clone https://github.com/rithvikkaki/JudgeX.git
+cd JudgeX
+```
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/rithvikkaki/JudgeX.git
-   cd JudgeX
-   ```
+### 2. Run the Backend
+```bash
+python -m venv .venv
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# macOS / Linux:
+# source .venv/bin/activate
 
-2. **Setup Backend**:
-   ```bash
-   python -m venv venv
-   # On Windows:
-   venv\Scripts\activate
-   # On macOS/Linux:
-   # source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
 
-   pip install -r requirements.txt
-   cp .env.example .env
+# Seed the database with initial problems, test cases, and practice contest
+python -m scripts.seed
 
-   # Seed database with initial problems & contests
-   python -m scripts.seed --reset
+# Start FastAPI server (with in-process worker enabled for local single-process dev)
+IN_PROCESS_WORKER=true ALLOW_UNSAFE_LOCAL_EXECUTION=true uvicorn app.main:app --reload
+```
 
-   # Start FastAPI server
-   uvicorn app.main:app --reload
-   ```
+### 3. Run the Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
 
-3. **Setup Frontend**:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-   Open `http://localhost:5173` in your browser.
+### 4. Run the Automated Test Suite
+```bash
+pytest -v
+```
 
 ---
 
-## 🐳 Running with Docker
+## 🐳 Running with Docker Compose
 
-To run the complete production-like stack (PostgreSQL, Redis, API, Celery Worker, and Docker Sandbox Engine):
+To run the multi-container stack (`PostgreSQL 16` + `Redis 7` + `FastAPI` + `Celery Worker` + `DockerBackend`):
 
 ```bash
-# Build and launch all container services
 docker compose up --build -d
-
-# Seed the Postgres database inside the container
 docker compose exec api python -m scripts.seed
 ```
 
-Access services:
-- **Frontend App**: `http://localhost:5173` (or `http://localhost:5175`)
-- **API Server**: `http://localhost:8000`
-- **Swagger Documentation**: `http://localhost:8000/docs`
+- **Frontend:** `http://localhost:5173`
+- **Backend API:** `http://localhost:8000`
+- **Swagger UI:** `http://localhost:8000/docs`
 
 ---
 
-## 📡 API Overview
+## 📡 API Reference
 
-JudgeX provides a clean RESTful API with automated OpenAPI / Swagger documentation:
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/v1/auth/register` | `POST` | Create a new user account and receive JWT access token. |
-| `/api/v1/auth/login` | `POST` | Authenticate and obtain JWT access token. |
-| `/api/v1/problems/` | `GET` | List problem archive with search, difficulty, and pagination filters. |
-| `/api/v1/problems/{slug}` | `GET` | Retrieve problem specification and sample test cases. |
-| `/api/v1/submissions/` | `POST` | Submit solution for asynchronous judging. |
-| `/api/v1/submissions/{id}` | `GET` | Poll submission status, verdict, execution time, and memory usage. |
-| `/api/v1/submissions/run` | `POST` | Execute scratch code against custom stdin without storing a submission. |
-| `/api/v1/contests/` | `GET` | List upcoming, active, and past contests. |
-| `/api/v1/contests/{id}/standings` | `GET` | Fetch real-time ICPC contest standings matrix. |
-| `/api/v1/health` | `GET` | Inspect system health, database latency, and active execution backend. |
-
----
-
-## 🗺 Future Improvements
-
-- [ ] **WebSocket Live Telemetry**: Streaming per-testcase execution feedback as it processes.
-- [ ] **Expanded Language Runtimes**: Adding Go, Rust, and JavaScript (Node.js) execution specs.
-- [ ] **Interactive Plagiarism Detection**: MOSS-style AST code similarity analysis across contest submissions.
-- [ ] **Alembic Database Migrations**: Automated schema version tracking for production evolution.
+| Endpoint | Method | Auth | Description |
+| :--- | :---: | :---: | :--- |
+| `/api/v1/ping` | `GET` | Public | Lightweight in-memory liveness probe (`{"status": "ok"}`) |
+| `/api/v1/health` | `GET` | Public | Database connectivity, latency, active sandbox backend, and compiler status |
+| `/api/v1/auth/register` | `POST` | Public | Register a new user account and receive a JWT access token |
+| `/api/v1/auth/login` | `POST` | Public | Authenticate with email/password and receive a JWT access token |
+| `/api/v1/auth/me` | `GET` | Bearer | Retrieve current authenticated user profile |
+| `/api/v1/problems` | `GET` | Public | Paginated problem list with search and difficulty filters |
+| `/api/v1/problems/{slug}` | `GET` | Public | Problem statement, constraints, and sample test cases |
+| `/api/v1/submissions/run` | `POST` | Bearer | Compile and run code against custom `stdin` without recording a submission |
+| `/api/v1/submissions` | `POST` | Bearer | Submit code for asynchronous evaluation against sample + hidden test cases |
+| `/api/v1/submissions/{id}` | `GET` | Bearer | Poll submission status (`Queued`, `Running`, `Completed`) and verdict telemetry |
+| `/api/v1/contests` | `GET` | Public | List upcoming, active, and past contests |
+| `/api/v1/contests/{id}/join` | `POST` | Bearer | Register the current user for an active contest |
+| `/api/v1/contests/{id}/leaderboard` | `GET` | Public | Retrieve live ICPC-style contest standings |
+| `/api/v1/dashboard` | `GET` | Bearer | Aggregate user submission metrics, language usage, and difficulty progress |
 
 ---
 

@@ -3,6 +3,7 @@
 [![Live Web App](https://img.shields.io/badge/Live_Web_App-judgex--web.onrender.com-B7F34A?style=for-the-badge&logo=render&logoColor=black)](https://judgex-web.onrender.com)
 [![Live API](https://img.shields.io/badge/Live_API-judgex--api.onrender.com-10B981?style=for-the-badge&logo=fastapi&logoColor=white)](https://judgex-api.onrender.com)
 [![Swagger Docs](https://img.shields.io/badge/OpenAPI_Docs-%2Fdocs-3B82F6?style=for-the-badge&logo=openapiinitiative&logoColor=white)](https://judgex-api.onrender.com/docs)
+[![License: All Rights Reserved](https://img.shields.io/badge/License-All_Rights_Reserved-EF4444?style=for-the-badge)](LICENSE)
 [![24/7 Cloud Keep-Alive](https://github.com/rithvikkaki/JudgeX/actions/workflows/keepalive.yml/badge.svg)](https://github.com/rithvikkaki/JudgeX/actions/workflows/keepalive.yml)
 
 **A modern, production-grade competitive programming judge that compiles, sandboxes, and evaluates untrusted code in Python, C++, and Java with real-time telemetry across Desktop and Mobile.**
@@ -248,5 +249,7 @@ docker compose exec api python -m scripts.seed
 
 ## 👨‍💻 Author & License
 
-Developed by **Rithvik Kaki** ([@rithvikkaki](https://github.com/rithvikkaki)).  
-Released under the [MIT License](LICENSE).
+Developed by **Rithvik Kaki** ([@rithvikkaki](https://github.com/rithvikkaki)).
+
+**Copyright © 2026 Rithvik Kaki. All Rights Reserved.**  
+This project is protected under a strict **[Proprietary / All Rights Reserved License](LICENSE)**. Unauthorized copying, modification, redistribution, or commercial use of this software or any portion of its codebase is strictly prohibited without prior written permission from the author.

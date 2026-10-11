@@ -1,21 +1,33 @@
-MIT License
+Proprietary & All Rights Reserved License
 
-Copyright (c) 2026 rithvikkaki
+Copyright (c) 2026 Rithvik Kaki (@rithvikkaki). All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. OWNERSHIP
+This software, source code, architecture, documentation, user interface design,
+and all associated files (collectively, the "Software") are the exclusive
+intellectual property of Rithvik Kaki.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. RESTRICTED USE (PORTFOLIO & EVALUATION ONLY)
+Permission is granted solely to view and inspect the source code and access the
+hosted demonstration for academic, educational, or recruitment evaluation
+purposes.
 
+3. STRICT PROHIBITIONS
+Without prior explicit written permission from the copyright holder (Rithvik Kaki),
+you may NOT:
+  a) Copy, clone, fork, redistribute, or republish the Software in whole or in part;
+  b) Modify, adapt, translate, reverse-engineer, or create derivative works based
+     upon the Software;
+  c) Use the Software or any portion of it for commercial, production, or SaaS
+     purposes;
+  d) Remove, alter, or obscure any copyright, attribution, or proprietary notices
+     contained within the Software;
+  e) Sublicense, sell, rent, lease, or transfer the Software to any third party.
+
+4. DISCLAIMER OF WARRANTY
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHOR OR COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -21,6 +21,7 @@ Prefer :mod:`app.execution.docker_backend` wherever a daemon is available.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import shutil
@@ -44,6 +45,9 @@ from app.execution.languages import LanguageSpec, get_language
 logger = logging.getLogger(__name__)
 
 IS_POSIX = os.name == "posix"
+_COMPILE_CACHE_LOCK = threading.Lock()
+_COMPILE_CACHE: dict[str, dict[str, bytes]] = {}
+_COMPILE_CACHE_MAX = 32
 
 try:  # pragma: no cover - platform dependent
     import resource
@@ -137,6 +141,23 @@ class LocalBackend(SandboxBackend):
         self, spec: LanguageSpec, workdir: str, request: ExecutionRequest
     ) -> ExecutionResult | None:
         assert spec.compile_cmd is not None
+        cache_key = hashlib.sha256(
+            f"{spec.id}\0{request.source_code}".encode("utf-8")
+        ).hexdigest()
+
+        with _COMPILE_CACHE_LOCK:
+            cached_artifacts = _COMPILE_CACHE.get(cache_key)
+
+        if cached_artifacts is not None:
+            base = Path(workdir)
+            for rel_name, content in cached_artifacts.items():
+                dst = base / rel_name
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_bytes(content)
+                if IS_POSIX and not rel_name.endswith(".class") and not rel_name.endswith(".pyc"):
+                    dst.chmod(0o755)
+            return None
+
         argv = _resolve_argv(spec.compile_cmd, workdir)
 
         try:
@@ -172,6 +193,21 @@ class LocalBackend(SandboxBackend):
                 exit_code=completed.returncode,
                 backend=self.name,
             )
+
+        try:
+            base = Path(workdir)
+            artifacts: dict[str, bytes] = {}
+            for item in base.rglob("*"):
+                if item.is_file() and item.name != spec.source_filename:
+                    if item.stat().st_size <= 16 * 1024 * 1024:
+                        rel = item.relative_to(base).as_posix()
+                        artifacts[rel] = item.read_bytes()
+            with _COMPILE_CACHE_LOCK:
+                if len(_COMPILE_CACHE) >= _COMPILE_CACHE_MAX:
+                    _COMPILE_CACHE.pop(next(iter(_COMPILE_CACHE)))
+                _COMPILE_CACHE[cache_key] = artifacts
+        except Exception:  # noqa: BLE001
+            pass
 
         return None
 

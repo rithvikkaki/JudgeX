@@ -84,7 +84,7 @@ LANGUAGES: dict[str, LanguageSpec] = {
         id=Language.JAVA.value,
         display_name="Java 21",
         source_filename="Main.java",
-        compile_cmd=["javac", "-encoding", "UTF-8", "Main.java"],
+        compile_cmd=["javac", "-J-XX:TieredStopAtLevel=1", "-encoding", "UTF-8", "Main.java"],
         run_cmd=["java", "-cp", ".", "Main"],
         # Kept in step with the JDK baked into the Dockerfile, so a submission
         # behaves identically on either backend.
@@ -92,7 +92,12 @@ LANGUAGES: dict[str, LanguageSpec] = {
         local_requirements=("javac", "java"),
         artifact="Main.class",
         supports_address_space_limit=False,
-        memory_flag_template=["-Xmx{memory_mb}m", "-XX:+UseSerialGC", "-Xss64m"],
+        memory_flag_template=[
+            "-Xmx{memory_mb}m",
+            "-XX:+UseSerialGC",
+            "-XX:TieredStopAtLevel=1",
+            "-Xss64m",
+        ],
     ),
 }
 

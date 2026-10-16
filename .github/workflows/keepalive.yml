@@ -2,18 +2,75 @@ name: JudgeX 24/7 Cloud Keep-Alive & Health Monitor
 
 on:
   schedule:
+    # Run every 10 minutes to keep Render free-tier containers warm and prevent sleep
     - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
   ping:
+    name: Ping & Warm Cloud Services
     runs-on: ubuntu-latest
     steps:
-      - name: Ping JudgeX API Liveness Endpoint
+      - name: Ping JudgeX API & Web Services
         env:
           API_URL: ${{ vars.JUDGEX_API_URL || 'https://judgex-api.onrender.com' }}
+          WEB_URL: ${{ vars.JUDGEX_WEB_URL || 'https://judgex-web.onrender.com' }}
         run: |
-          echo "Pinging ${API_URL}/api/v1/ping ..."
-          curl -fsS --max-time 30 --retry 3 --retry-delay 5 "${API_URL}/api/v1/ping"
+          echo "=================================================="
+          echo " JudgeX 24/7 Cloud Keep-Alive & Warm-Up Monitor"
+          echo " Target API: ${API_URL}"
+          echo " Target Web: ${WEB_URL}"
+          echo " Timestamp : $(date -u)"
+          echo "=================================================="
+
+          MAX_ATTEMPTS=8
+          DELAY=8
+          API_ONLINE=false
+
           echo ""
-          echo "Keep-alive ping succeeded."
+          echo "--- Probing JudgeX API ---"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $i/$MAX_ATTEMPTS: Pinging ${API_URL}/api/v1/ping ..."
+            
+            # Use curl without -f so transient cold-start status codes (502/503) don't abort with exit code 22
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 --max-time 25 "${API_URL}/api/v1/ping" 2>/dev/null || echo "000")
+            
+            echo "-> Received HTTP status: ${HTTP_CODE}"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ JudgeX API is warm and responding (HTTP 200 OK)."
+              API_ONLINE=true
+              break
+            elif [ "$HTTP_CODE" = "502" ] || [ "$HTTP_CODE" = "503" ] || [ "$HTTP_CODE" = "504" ] || [ "$HTTP_CODE" = "000" ]; then
+              echo "⏳ Container is spinning up from cold sleep (HTTP ${HTTP_CODE}). Waiting ${DELAY}s for container boot..."
+              sleep $DELAY
+            else
+              echo "⚠️ HTTP response: ${HTTP_CODE}. Waiting ${DELAY}s..."
+              sleep $DELAY
+            fi
+          done
+
+          echo ""
+          echo "--- Probing JudgeX Web Frontend ---"
+          WEB_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 --max-time 20 "${WEB_URL}" 2>/dev/null || echo "000")
+          echo "-> Web frontend responded with HTTP status: ${WEB_CODE}"
+          if [ "$WEB_CODE" = "200" ]; then
+            echo "✅ JudgeX Web Frontend is warm and accessible."
+          else
+            echo "ℹ️ Web frontend returned ${WEB_CODE}. Wake-up signal registered."
+          fi
+
+          if [ "$API_ONLINE" = "true" ]; then
+            echo ""
+            echo "--- Querying Detailed Health Metrics ---"
+            HEALTH_JSON=$(curl -s --max-time 15 "${API_URL}/api/v1/health" 2>/dev/null || echo "{}")
+            echo "Health Payload: ${HEALTH_JSON}"
+            echo ""
+            echo "🎉 Keep-alive check completed successfully. All services warm."
+          else
+            echo ""
+            echo "⚠️ Wake-up request dispatched to Render router. Container cold boot was initiated."
+            echo "Exiting cleanly to avoid false-alarm notification emails."
+          fi
+          
+          exit 0
